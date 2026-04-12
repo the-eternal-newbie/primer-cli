@@ -11,12 +11,20 @@ Read it fully before writing any code.
 
 ## Before you write any code
 
-1. Read `docs/CANONICAL_ARCHITECTURE.md` — stack decisions and rationale
-2. Read `docs/CANONICAL_PATTERNS.md` — code patterns you must follow
-3. Read `.cursor/rules/core.mdc` — non-negotiable engineering rules
-4. Read `.cursor/rules/git-discipline.mdc` — branch and commit rules
+- Read `docs/CANONICAL_ARCHITECTURE.md` — stack decisions and rationale
+- Read `docs/CANONICAL_PATTERNS.md` — code patterns you must follow
+{{#cursorEnabled}}
+- Read `.cursor/rules/core.mdc` — non-negotiable engineering rules
+- Read `.cursor/rules/git-discipline.mdc` — branch and commit rules
+{{/cursorEnabled}}
+{{#claudeEnabled}}
+- Read `.claude/CLAUDE.md` — Claude-specific conventions and rules
+{{/claudeEnabled}}
 
 ## Commands available to you
+
+These commands enforce git discipline and pre-commit checks.
+Load them from your tool's commands directory before using them.
 
 | Command | Purpose |
 |---|---|
@@ -40,10 +48,16 @@ Read it fully before writing any code.
 │   ├── index.ts          ← entry point
 │   ├── commands/         ← one file per subcommand
 │   └── lib/              ← shared utilities
-├── packages/             ← monorepo packages (if applicable)
 ├── docs/                 ← canonical documentation (read before coding)
+{{#cursorEnabled}}
 ├── .cursor/
 │   ├── rules/            ← scoped agent rules
 │   └── commands/         ← agent slash commands
+{{/cursorEnabled}}
+{{#claudeEnabled}}
+├── .claude/
+│   ├── CLAUDE.md         ← Claude-specific conventions
+│   └── commands/         ← agent slash commands
+{{/claudeEnabled}}
 └── AGENTS.md             ← you are here
 ```

@@ -1,15 +1,19 @@
 # {{projectName}} — Claude Code Guide
 
 This file is read automatically by Claude Code at session start.
-It inherits all rules from AGENTS.md — read that first.
+Read `AGENTS.md` first — this file extends it with Claude-specific conventions.
 
-## Quick reference
+## Commands
+
+These slash commands are available in `.claude/commands/`:
 
 | Command | Purpose |
 |---|---|
 | `/git-start-work` | Start a new branch before any work |
 | `/git-commit-progress` | Commit in-progress work with checks |
 | `/git-finish-work` | Push branch and open PR |
+
+Load a command by reading its file before invoking it.
 
 ## Claude-specific conventions
 

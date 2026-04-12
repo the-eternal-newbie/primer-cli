@@ -1,0 +1,27 @@
+# /git-commit-progress
+
+Commit in-progress work with full pre-commit checks.
+
+## Usage
+
+`/git-commit-progress <type> <description>`
+
+## Steps
+
+1. Confirm we're not on `main` — if we are, stop
+2. Derive scope from the branch name (`<type>/<scope>-<description>`)
+3. Run pre-commit checks:
+   - `{{packageManager}} typecheck`
+   - `{{packageManager}} lint`
+   - `{{packageManager}} test`
+   - If any fails, stop and report — do not commit
+4. Show `git status` and `git diff --stat` to the user
+5. Propose specific files to stage — never propose `git add .`
+6. Wait for confirmation, then stage and commit:
+   - `git commit -m "<type>(<scope>): <description>"`
+7. Report the commit hash and files changed
+
+## Do not
+- Push (that's `/git-finish-work`)
+- `git add .` without showing the user what gets staged
+- Commit to `main`

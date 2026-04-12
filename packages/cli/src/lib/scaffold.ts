@@ -9,21 +9,22 @@ export interface ScaffoldContext {
   packageManager: "pnpm" | "npm" | "yarn";
   packageManagerVersion: string;
   aiTools: Array<"cursor" | "claude-code">;
+  cursorEnabled: boolean;
+  claudeEnabled: boolean;
   initGit: boolean;
 }
 
-// Directories gated behind AI tool selection.
-// A directory is skipped if the required tool was not selected.
-export const AI_TOOL_GATES: Record<string, string> = {
+export type AiTool = ScaffoldContext["aiTools"][number];
+export type PackageManager = ScaffoldContext["packageManager"];
+
+export const AI_TOOL_GATES: Record<string, AiTool> = {
   ".cursor": "cursor",
   ".claude": "claude-code",
-};
+} as const;
 
-// Files (without .hbs extension) gated behind package manager selection.
-// A file is skipped if the current package manager doesn't match.
-export const PACKAGE_MANAGER_GATES: Record<string, string> = {
+export const PACKAGE_MANAGER_GATES: Record<string, PackageManager> = {
   ".npmrc": "pnpm",
-};
+} as const;
 
 export function resolvePackageManagerVersion(pm: string): string {
   try {

@@ -1,5 +1,5 @@
 import * as p from "@clack/prompts";
-import { join, basename } from "node:path";
+import { join } from "node:path";
 import { existsSync } from "node:fs";
 import { getTemplatesRoot } from "../lib/resolve.ts";
 import {
@@ -29,10 +29,7 @@ async function scaffoldDir(
 
     if (entry.isDirectory()) {
       const requiredTool = AI_TOOL_GATES[entry.name];
-      if (
-        requiredTool &&
-        !context.aiTools.includes(requiredTool as "cursor" | "claude-code")
-      ) {
+      if (requiredTool && !context.aiTools.includes(requiredTool)) {
         continue;
       }
       await scaffoldDir(srcPath, outPath, context);
@@ -104,11 +101,13 @@ export async function runInit(): Promise<void> {
 
   const context: ScaffoldContext = {
     projectName: answers.projectName as string,
-    packageManager: answers.packageManager as "pnpm" | "npm" | "yarn",
+    packageManager: answers.packageManager as PackageManager,
     packageManagerVersion: resolvePackageManagerVersion(
       answers.packageManager as string
     ),
-    aiTools: answers.aiTools as Array<"cursor" | "claude-code">,
+    aiTools: answers.aiTools as AiTool[],
+    cursorEnabled: (answers.aiTools as AiTool[]).includes("cursor"),
+    claudeEnabled: (answers.aiTools as AiTool[]).includes("claude-code"),
     initGit: answers.initGit as boolean,
   };
 
