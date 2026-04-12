@@ -8,9 +8,24 @@ export interface ScaffoldContext {
   projectName: string;
   packageManager: "pnpm" | "npm" | "yarn";
   packageManagerVersion: string;
+  packageManagerRun: string;
   aiTools: Array<"cursor" | "claude-code">;
+  cursorEnabled: boolean;
+  claudeEnabled: boolean;
   initGit: boolean;
 }
+
+export type AiTool = ScaffoldContext["aiTools"][number];
+export type PackageManager = ScaffoldContext["packageManager"];
+
+export const AI_TOOL_GATES: Record<string, AiTool> = {
+  ".cursor": "cursor",
+  ".claude": "claude-code",
+} as const;
+
+export const PACKAGE_MANAGER_GATES: Record<string, PackageManager> = {
+  ".npmrc": "pnpm",
+} as const;
 
 export function resolvePackageManagerVersion(pm: string): string {
   try {
@@ -19,6 +34,10 @@ export function resolvePackageManagerVersion(pm: string): string {
   } catch {
     return "latest";
   }
+}
+
+export function resolvePackageManagerRun(pm: PackageManager): string {
+  return pm === "npm" ? "npm run" : pm;
 }
 
 export async function renderTemplate(

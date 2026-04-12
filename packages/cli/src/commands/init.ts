@@ -7,8 +7,11 @@ import {
   writeOutputFile,
   copyStaticFile,
   resolvePackageManagerVersion,
+  resolvePackageManagerRun,
+  AI_TOOL_GATES,
+  PACKAGE_MANAGER_GATES,
 } from "../lib/scaffold.ts";
-import type { ScaffoldContext } from "../lib/scaffold.ts";
+import type { AiTool, PackageManager, ScaffoldContext } from "../lib/scaffold.ts";
 
 async function scaffoldDir(
   templateDir: string,
@@ -26,12 +29,24 @@ async function scaffoldDir(
     const outPath = join(outputDir, outName);
 
     if (entry.isDirectory()) {
+      const requiredTool = AI_TOOL_GATES[entry.name];
+      if (requiredTool && !context.aiTools.includes(requiredTool)) {
+        continue;
+      }
       await scaffoldDir(srcPath, outPath, context);
-    } else if (entry.name.endsWith(".hbs")) {
-      const rendered = await renderTemplate(srcPath, context);
-      await writeOutputFile(outPath, rendered);
     } else {
-      await copyStaticFile(srcPath, outPath);
+      // Check file-level gates using the output name (without .hbs)
+      const requiredPm = PACKAGE_MANAGER_GATES[outName];
+      if (requiredPm && context.packageManager !== requiredPm) {
+        continue;
+      }
+
+      if (entry.name.endsWith(".hbs")) {
+        const rendered = await renderTemplate(srcPath, context);
+        await writeOutputFile(outPath, rendered);
+      } else {
+        await copyStaticFile(srcPath, outPath);
+      }
     }
   }
 }
@@ -85,13 +100,17 @@ export async function runInit(): Promise<void> {
     }
   );
 
+  const pm = answers.packageManager as PackageManager;
+  const aiTools = answers.aiTools as AiTool[];
+
   const context: ScaffoldContext = {
     projectName: answers.projectName as string,
-    packageManager: answers.packageManager as "pnpm" | "npm" | "yarn",
-    packageManagerVersion: resolvePackageManagerVersion(
-      answers.packageManager as string
-    ),
-    aiTools: answers.aiTools as Array<"cursor" | "claude-code">,
+    packageManager: pm,
+    packageManagerVersion: resolvePackageManagerVersion(pm),
+    packageManagerRun: resolvePackageManagerRun(pm),
+    aiTools,
+    cursorEnabled: aiTools.includes("cursor"),
+    claudeEnabled: aiTools.includes("claude-code"),
     initGit: answers.initGit as boolean,
   };
 

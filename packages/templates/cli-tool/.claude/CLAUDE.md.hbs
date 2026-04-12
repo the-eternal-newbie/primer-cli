@@ -1,0 +1,44 @@
+# {{projectName}} — Claude Code Guide
+
+This file is read automatically by Claude Code at session start.
+Read `AGENTS.md` first — this file extends it with Claude-specific conventions.
+
+## Commands
+
+These slash commands are available in `.claude/commands/`:
+
+| Command | Purpose |
+|---|---|
+| `/git-start-work` | Start a new branch before any work |
+| `/git-commit-progress` | Commit in-progress work with checks |
+| `/git-finish-work` | Push branch and open PR |
+
+Load a command by reading its file before invoking it.
+
+## Claude-specific conventions
+
+### Before writing any code
+1. Read `AGENTS.md` fully
+2. Read `docs/CANONICAL_ARCHITECTURE.md`
+3. Read `docs/CANONICAL_PATTERNS.md`
+4. Check existing files before creating new ones
+
+### Phase boundaries
+Every discrete unit of work must end with:
+- An explicit list of files written or modified
+- A summary of what was done
+- A STOP marker before starting the next phase:
+
+```
+--- STOP ---
+Phase complete. Files written:
+- src/commands/example.ts
+- docs/CANONICAL_PATTERNS.md (updated)
+
+Awaiting human review before proceeding.
+```
+
+### When you are uncertain
+- Stop and ask — do not guess at APIs or conventions
+- Check canonical docs before inventing patterns
+- Prefer doing less and confirming over doing more and breaking things
