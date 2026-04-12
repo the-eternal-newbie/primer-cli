@@ -1,5 +1,5 @@
 import { mkdir, writeFile, readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname } from "node:path";
 import { existsSync } from "node:fs";
 import { execSync } from "node:child_process";
 import Mustache from "mustache";

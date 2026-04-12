@@ -1,7 +1,6 @@
 import * as p from "@clack/prompts";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
-import { readdir } from "node:fs/promises";
 import { getTemplatesRoot } from "../lib/resolve.ts";
 import {
   renderTemplate,
@@ -16,7 +15,7 @@ async function scaffoldDir(
   outputDir: string,
   context: ScaffoldContext
 ): Promise<void> {
-  const { readdir, stat } = await import("node:fs/promises");
+  const { readdir } = await import("node:fs/promises");
   const entries = await readdir(templateDir, { withFileTypes: true });
 
   for (const entry of entries) {

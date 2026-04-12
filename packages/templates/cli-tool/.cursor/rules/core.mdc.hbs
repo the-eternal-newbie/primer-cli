@@ -20,14 +20,17 @@ They are non-negotiable and take precedence over convenience.
 
 - Functions over classes unless state management genuinely requires a class
 - Explicit return types on all exported functions
-- No default exports — named exports only
+- No default exports in `src/**` — named exports only
+- Config files at the project root (e.g. `tsup.config.ts`, `eslint.config.js`) are
+  exempt from this rule and may use default exports as required by their tooling
 - Early returns over nested conditionals
 
 ## File organization
 
 - One concept per file
 - `src/commands/` — one file per CLI subcommand
-- `src/lib/` — pure utility functions with no side effects
+- `src/lib/` — shared utilities including I/O helpers, git operations, and other
+  infrastructure concerns; keep functions focused and explicitly typed
 - No barrel files (`index.ts` re-exports) — import directly from the source file
 
 ## Error handling

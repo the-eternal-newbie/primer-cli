@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "{{packageManager}}@{{packageManagerVersion}}",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "bin": {
     "{{projectName}}": "./dist/index.js"
@@ -19,13 +19,14 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@clack/prompts": "^0.9",
-    "mustache": "^4"
+    "@clack/prompts": "^0.9"
   },
   "devDependencies": {
-    "@types/mustache": "^4",
+    "@eslint/js": "^9",
     "@types/node": "^22",
+    "eslint": "^9",
     "tsup": "^8",
-    "typescript": "^5"
+    "typescript": "^5",
+    "typescript-eslint": "^8"
   }
 }
