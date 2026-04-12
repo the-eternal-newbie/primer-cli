@@ -1,0 +1,46 @@
+# {{projectName}} — Canonical Patterns
+
+> Agents: these are the exact patterns to follow when generating code.
+> Do not deviate without updating this document and getting human approval.
+
+## Command pattern
+
+Every CLI subcommand lives in `src/commands/<name>.ts` and exports
+a single async function:
+
+```typescript
+export async function run<Name>(): Promise<void> {
+  // use @clack/prompts for all user interaction
+  // delegate file I/O to src/lib/scaffold.ts
+  // delegate git operations to src/lib/git.ts
+}
+```
+
+## Error handling pattern
+
+```typescript
+import * as p from "@clack/prompts";
+
+try {
+  // operation
+} catch (err) {
+  p.cancel(err instanceof Error ? err.message : String(err));
+  process.exit(1);
+}
+```
+
+## File writing pattern
+
+Always use the scaffold lib — never write files directly in commands:
+
+```typescript
+import { writeOutputFile, renderTemplate } from "../lib/scaffold.ts";
+```
+
+## Adding a new command
+
+1. Create `src/commands/<name>.ts`
+2. Export `run<Name>(): Promise<void>`
+3. Import and wire it in `src/index.ts`
+4. Add a corresponding `.cursor/commands/<name>.md` slash command
+5. Update this document

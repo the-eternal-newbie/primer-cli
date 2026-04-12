@@ -1,13 +1,24 @@
 import { mkdir, writeFile, readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname } from "node:path";
 import { existsSync } from "node:fs";
+import { execSync } from "node:child_process";
 import Mustache from "mustache";
 
 export interface ScaffoldContext {
   projectName: string;
   packageManager: "pnpm" | "npm" | "yarn";
+  packageManagerVersion: string;
   aiTools: Array<"cursor" | "claude-code">;
   initGit: boolean;
+}
+
+export function resolvePackageManagerVersion(pm: string): string {
+  try {
+    const result = execSync(`${pm} --version`, { stdio: "pipe" });
+    return result.toString().trim();
+  } catch {
+    return "latest";
+  }
 }
 
 export async function renderTemplate(

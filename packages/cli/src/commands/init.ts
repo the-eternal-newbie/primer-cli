@@ -1,10 +1,40 @@
 import * as p from "@clack/prompts";
-import { execSync } from "node:child_process";
-import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { existsSync } from "node:fs";
 import { getTemplatesRoot } from "../lib/resolve.ts";
-import { renderTemplate, writeOutputFile, copyStaticFile } from "../lib/scaffold.ts";
+import {
+  renderTemplate,
+  writeOutputFile,
+  copyStaticFile,
+  resolvePackageManagerVersion,
+} from "../lib/scaffold.ts";
 import type { ScaffoldContext } from "../lib/scaffold.ts";
+
+async function scaffoldDir(
+  templateDir: string,
+  outputDir: string,
+  context: ScaffoldContext
+): Promise<void> {
+  const { readdir } = await import("node:fs/promises");
+  const entries = await readdir(templateDir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const srcPath = join(templateDir, entry.name);
+    const outName = entry.name.endsWith(".hbs")
+      ? entry.name.slice(0, -4)
+      : entry.name;
+    const outPath = join(outputDir, outName);
+
+    if (entry.isDirectory()) {
+      await scaffoldDir(srcPath, outPath, context);
+    } else if (entry.name.endsWith(".hbs")) {
+      const rendered = await renderTemplate(srcPath, context);
+      await writeOutputFile(outPath, rendered);
+    } else {
+      await copyStaticFile(srcPath, outPath);
+    }
+  }
+}
 
 export async function runInit(): Promise<void> {
   p.intro("primer — scaffold an AI-ready project");
@@ -55,11 +85,20 @@ export async function runInit(): Promise<void> {
     }
   );
 
-  const context = answers as ScaffoldContext;
+  const context: ScaffoldContext = {
+    projectName: answers.projectName as string,
+    packageManager: answers.packageManager as "pnpm" | "npm" | "yarn",
+    packageManagerVersion: resolvePackageManagerVersion(
+      answers.packageManager as string
+    ),
+    aiTools: answers.aiTools as Array<"cursor" | "claude-code">,
+    initGit: answers.initGit as boolean,
+  };
+
   const outputDir = join(process.cwd(), context.projectName);
 
   if (existsSync(outputDir)) {
-    p.cancel(`Directory ${context.projectName} already exists.`);
+    p.cancel(`Directory "${context.projectName}" already exists.`);
     process.exit(1);
   }
 
@@ -69,14 +108,10 @@ export async function runInit(): Promise<void> {
   s.start("Scaffolding project");
 
   try {
-    // We'll fill this in next session when templates exist
-    // For now just create the output directory to prove the flow works
-    const { mkdir } = await import("node:fs/promises");
-    await mkdir(outputDir, { recursive: true });
-
-    s.stop("Project created");
+    await scaffoldDir(templatesRoot, outputDir, context);
+    s.stop("Project scaffolded");
   } catch (err) {
-    s.stop("Failed");
+    s.stop("Scaffolding failed");
     p.cancel(String(err));
     process.exit(1);
   }
@@ -87,12 +122,15 @@ export async function runInit(): Promise<void> {
     try {
       const { gitInit, gitCommit } = await import("../lib/git.ts");
       gitInit(outputDir);
-      gitCommit(outputDir, `chore(${context.projectName}): initial commit`);
+      gitCommit(
+        outputDir,
+        `chore(${context.projectName}): initial commit from primer`
+      );
       gs.stop("Git initialized");
     } catch {
       gs.stop("Git init skipped (git not found)");
     }
   }
 
-  p.outro(`Done! cd ${context.projectName} and start building.`);
+  p.outro(`Done! Next: cd ${context.projectName} and open it in your editor.`);
 }

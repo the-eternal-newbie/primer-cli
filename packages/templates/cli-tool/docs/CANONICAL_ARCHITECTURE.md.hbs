@@ -1,0 +1,34 @@
+# {{projectName}} — Canonical Architecture
+
+**Last updated:** (fill in after initial setup)  
+**Status:** Living document — update when stack decisions change
+
+> Agents: read this before generating any code. Do not invent
+> dependencies or patterns not listed here.
+
+## Stack
+
+| Layer | Choice | Rationale |
+|---|---|---|
+| Runtime | Node.js 22+ | LTS, native ESM, built-in test runner |
+| Language | TypeScript 5, strict mode | Type safety at boundaries |
+| Package manager | {{packageManager}} | (fill in rationale) |
+| CLI prompts | @clack/prompts | Clean UX, actively maintained |
+| Build | tsup | Zero-config, ESM output |
+| Test | (fill in) | |
+| Lint | (fill in) | |
+
+## Key decisions
+
+### ESM only
+No CommonJS. All imports use `node:` prefix for built-ins.
+No barrel files — import directly from source.
+
+### No framework lock-in
+(Describe what this project deliberately avoids and why.)
+
+## What does NOT belong here
+
+- Business logic in the entry point (`src/index.ts`)
+- Direct I/O in library functions (`src/lib/`)
+- Any LLM API calls — this tool generates static files only

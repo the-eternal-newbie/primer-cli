@@ -1,0 +1,46 @@
+---
+description: Core engineering rules for {{projectName}}
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Core rules
+
+These rules apply to every file in the project.
+They are non-negotiable and take precedence over convenience.
+
+## TypeScript
+
+- Strict mode is on — no `any`, no type assertions without a comment explaining why
+- Use `node:` prefix for all Node built-in imports (`node:fs`, `node:path`, etc.)
+- ESM only — no `require()`, no CommonJS
+- Import `.ts` extensions in source files (bundler mode resolves them)
+
+## Code style
+
+- Functions over classes unless state management genuinely requires a class
+- Explicit return types on all exported functions
+- No default exports in `src/**` — named exports only
+- Config files at the project root (e.g. `tsup.config.ts`, `eslint.config.js`) are
+  exempt from this rule and may use default exports as required by their tooling
+- Early returns over nested conditionals
+
+## File organization
+
+- One concept per file
+- `src/commands/` — one file per CLI subcommand
+- `src/lib/` — shared utilities including I/O helpers, git operations, and other
+  infrastructure concerns; keep functions focused and explicitly typed
+- No barrel files (`index.ts` re-exports) — import directly from the source file
+
+## Error handling
+
+- Never swallow errors silently
+- User-facing errors go through the CLI output layer (never raw `console.error`)
+- All async functions must handle rejection explicitly
+
+## Testing
+
+- Tests live alongside source in `src/**/*.test.ts`
+- Test pure functions in `src/lib/` first — highest leverage
+- No arbitrary `setTimeout` in tests — use deterministic assertions

@@ -1,0 +1,19 @@
+# /git-start-work
+
+Start a new piece of work on a fresh branch.
+
+## Usage
+
+`/git-start-work <type> <scope> <description>`
+
+## Steps
+
+1. Run `git status` — if uncommitted changes exist, stop and tell the user
+2. `git checkout main && git pull origin main`
+3. `git checkout -b <type>/<scope>-<description>`
+4. Confirm the branch is active and report the branch name and last commit hash
+5. Tell the user: "Branch ready. Use `/git-commit-progress` as you work."
+
+## Do not
+- Branch without pulling main first
+- Branch if uncommitted changes exist on the current branch
