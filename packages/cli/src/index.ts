@@ -9,6 +9,5 @@ const templatesRoot = join(
   require.resolve("@primer/templates"),
   ".."
 );
-
 console.log("primer CLI running");
 console.log("Templates root:", templatesRoot);
