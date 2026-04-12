@@ -7,10 +7,11 @@ import {
   writeOutputFile,
   copyStaticFile,
   resolvePackageManagerVersion,
+  resolvePackageManagerRun,
   AI_TOOL_GATES,
   PACKAGE_MANAGER_GATES,
 } from "../lib/scaffold.ts";
-import type { ScaffoldContext } from "../lib/scaffold.ts";
+import type { AiTool, PackageManager, ScaffoldContext } from "../lib/scaffold.ts";
 
 async function scaffoldDir(
   templateDir: string,
@@ -99,15 +100,17 @@ export async function runInit(): Promise<void> {
     }
   );
 
+  const pm = answers.packageManager as PackageManager;
+  const aiTools = answers.aiTools as AiTool[];
+  
   const context: ScaffoldContext = {
     projectName: answers.projectName as string,
-    packageManager: answers.packageManager as PackageManager,
-    packageManagerVersion: resolvePackageManagerVersion(
-      answers.packageManager as string
-    ),
-    aiTools: answers.aiTools as AiTool[],
-    cursorEnabled: (answers.aiTools as AiTool[]).includes("cursor"),
-    claudeEnabled: (answers.aiTools as AiTool[]).includes("claude-code"),
+    packageManager: pm,
+    packageManagerVersion: resolvePackageManagerVersion(pm),
+    packageManagerRun: resolvePackageManagerRun(pm),
+    aiTools,
+    cursorEnabled: aiTools.includes("cursor"),
+    claudeEnabled: aiTools.includes("claude-code"),
     initGit: answers.initGit as boolean,
   };
 

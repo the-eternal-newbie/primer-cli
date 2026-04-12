@@ -8,6 +8,7 @@ export interface ScaffoldContext {
   projectName: string;
   packageManager: "pnpm" | "npm" | "yarn";
   packageManagerVersion: string;
+  packageManagerRun: string;
   aiTools: Array<"cursor" | "claude-code">;
   cursorEnabled: boolean;
   claudeEnabled: boolean;
@@ -33,6 +34,10 @@ export function resolvePackageManagerVersion(pm: string): string {
   } catch {
     return "latest";
   }
+}
+
+export function resolvePackageManagerRun(pm: PackageManager): string {
+  return pm === "npm" ? "npm run" : pm;
 }
 
 export async function renderTemplate(

@@ -10,10 +10,10 @@ Finalize a branch, push it, and open a PR.
 
 1. Confirm we're not on `main` — if we are, stop
 2. Run all pre-commit checks one final time:
-   - `{{packageManager}} typecheck`
-   - `{{packageManager}} lint`
-   - `{{packageManager}} test`
-   - `{{packageManager}} build`
+   - `{{packageManagerRun}} typecheck`
+   - `{{packageManagerRun}} lint`
+   - `{{packageManagerRun}} test`
+   - `{{packageManagerRun}} build`
    - If any fails, stop and report
 3. Check for uncommitted changes — if any, ask the user whether to commit them
 4. `git push -u origin <branch-name>` — if push fails, stop (no force push)
