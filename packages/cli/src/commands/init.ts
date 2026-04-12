@@ -3,7 +3,12 @@ import { join } from "node:path";
 import { existsSync } from "node:fs";
 import { readdir } from "node:fs/promises";
 import { getTemplatesRoot } from "../lib/resolve.ts";
-import { renderTemplate, writeOutputFile, copyStaticFile } from "../lib/scaffold.ts";
+import {
+  renderTemplate,
+  writeOutputFile,
+  copyStaticFile,
+  resolvePackageManagerVersion,
+} from "../lib/scaffold.ts";
 import type { ScaffoldContext } from "../lib/scaffold.ts";
 
 async function scaffoldDir(
@@ -16,7 +21,6 @@ async function scaffoldDir(
 
   for (const entry of entries) {
     const srcPath = join(templateDir, entry.name);
-    // Strip .hbs extension for output path
     const outName = entry.name.endsWith(".hbs")
       ? entry.name.slice(0, -4)
       : entry.name;
@@ -82,7 +86,16 @@ export async function runInit(): Promise<void> {
     }
   );
 
-  const context = answers as ScaffoldContext;
+  const context: ScaffoldContext = {
+    projectName: answers.projectName as string,
+    packageManager: answers.packageManager as "pnpm" | "npm" | "yarn",
+    packageManagerVersion: resolvePackageManagerVersion(
+      answers.packageManager as string
+    ),
+    aiTools: answers.aiTools as Array<"cursor" | "claude-code">,
+    initGit: answers.initGit as boolean,
+  };
+
   const outputDir = join(process.cwd(), context.projectName);
 
   if (existsSync(outputDir)) {
