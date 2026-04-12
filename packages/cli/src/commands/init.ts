@@ -102,7 +102,7 @@ export async function runInit(): Promise<void> {
 
   const pm = answers.packageManager as PackageManager;
   const aiTools = answers.aiTools as AiTool[];
-  
+
   const context: ScaffoldContext = {
     projectName: answers.projectName as string,
     packageManager: pm,
