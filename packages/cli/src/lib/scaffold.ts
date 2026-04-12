@@ -12,6 +12,19 @@ export interface ScaffoldContext {
   initGit: boolean;
 }
 
+// Directories gated behind AI tool selection.
+// A directory is skipped if the required tool was not selected.
+export const AI_TOOL_GATES: Record<string, string> = {
+  ".cursor": "cursor",
+  ".claude": "claude-code",
+};
+
+// Files (without .hbs extension) gated behind package manager selection.
+// A file is skipped if the current package manager doesn't match.
+export const PACKAGE_MANAGER_GATES: Record<string, string> = {
+  ".npmrc": "pnpm",
+};
+
 export function resolvePackageManagerVersion(pm: string): string {
   try {
     const result = execSync(`${pm} --version`, { stdio: "pipe" });

@@ -1,5 +1,5 @@
 import * as p from "@clack/prompts";
-import { join } from "node:path";
+import { join, basename } from "node:path";
 import { existsSync } from "node:fs";
 import { getTemplatesRoot } from "../lib/resolve.ts";
 import {
@@ -7,6 +7,8 @@ import {
   writeOutputFile,
   copyStaticFile,
   resolvePackageManagerVersion,
+  AI_TOOL_GATES,
+  PACKAGE_MANAGER_GATES,
 } from "../lib/scaffold.ts";
 import type { ScaffoldContext } from "../lib/scaffold.ts";
 
@@ -26,12 +28,27 @@ async function scaffoldDir(
     const outPath = join(outputDir, outName);
 
     if (entry.isDirectory()) {
+      const requiredTool = AI_TOOL_GATES[entry.name];
+      if (
+        requiredTool &&
+        !context.aiTools.includes(requiredTool as "cursor" | "claude-code")
+      ) {
+        continue;
+      }
       await scaffoldDir(srcPath, outPath, context);
-    } else if (entry.name.endsWith(".hbs")) {
-      const rendered = await renderTemplate(srcPath, context);
-      await writeOutputFile(outPath, rendered);
     } else {
-      await copyStaticFile(srcPath, outPath);
+      // Check file-level gates using the output name (without .hbs)
+      const requiredPm = PACKAGE_MANAGER_GATES[outName];
+      if (requiredPm && context.packageManager !== requiredPm) {
+        continue;
+      }
+
+      if (entry.name.endsWith(".hbs")) {
+        const rendered = await renderTemplate(srcPath, context);
+        await writeOutputFile(outPath, rendered);
+      } else {
+        await copyStaticFile(srcPath, outPath);
+      }
     }
   }
 }
