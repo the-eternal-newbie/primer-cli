@@ -1,0 +1,49 @@
+# {{projectName}} — Agent Guide
+
+This file is the mandatory entry point for all AI coding agents.
+Read it fully before writing any code.
+
+## Project overview
+
+**Name:** {{projectName}}
+**Package manager:** {{packageManager}}
+**Type:** CLI tool (Node.js, TypeScript, ESM)
+
+## Before you write any code
+
+1. Read `docs/CANONICAL_ARCHITECTURE.md` — stack decisions and rationale
+2. Read `docs/CANONICAL_PATTERNS.md` — code patterns you must follow
+3. Read `.cursor/rules/core.mdc` — non-negotiable engineering rules
+4. Read `.cursor/rules/git-discipline.mdc` — branch and commit rules
+
+## Commands available to you
+
+| Command | Purpose |
+|---|---|
+| `/git-start-work` | Start a new branch before any work |
+| `/git-commit-progress` | Commit in-progress work with checks |
+| `/git-finish-work` | Push branch and open PR |
+
+## Non-negotiables
+
+- Never commit directly to `main`
+- Never skip typecheck, lint, or tests before committing
+- Never invent APIs — check canonical docs first
+- Always stop and confirm with the human before destructive operations
+- Every phase of work ends with an explicit file list and a STOP marker
+
+## Project structure
+
+```
+{{projectName}}/
+├── src/
+│   ├── index.ts          ← entry point
+│   ├── commands/         ← one file per subcommand
+│   └── lib/              ← shared utilities
+├── packages/             ← monorepo packages (if applicable)
+├── docs/                 ← canonical documentation (read before coding)
+├── .cursor/
+│   ├── rules/            ← scoped agent rules
+│   └── commands/         ← agent slash commands
+└── AGENTS.md             ← you are here
+```

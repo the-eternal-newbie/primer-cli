@@ -1,0 +1,52 @@
+---
+description: Git and version control discipline for {{projectName}}
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Git discipline
+
+These rules apply to every git operation.
+They are non-negotiable and take precedence over user convenience.
+
+## Branches
+
+### Never commit directly to main
+- `main` is protected — always work on a branch
+- If on `main` and asked to commit, stop and create a branch first
+- If the user insists after warning, refuse — this is a hard rule
+
+### Branch naming
+Format: `<type>/<scope>-<short-description>` in kebab-case
+
+- `type`: `feat` | `fix` | `chore` | `docs` | `refactor` | `test`
+- `scope`: short package or domain name
+- `short-description`: 2–5 words
+
+Examples:
+- `feat/cli-add-retrofit-command`
+- `fix/cli-template-resolution`
+- `chore/deps-bump`
+
+## Commits
+
+### Conventional Commits format
+
+<type>(<scope>): <description>
+
+- Imperative mood, no trailing period, 50 chars max
+- Good: `add template resolution for cli-tool type`
+- Bad: `Added template resolution.`
+
+### Pre-commit checks (run in this order)
+1. `{{packageManager}} typecheck` — must pass
+2. `{{packageManager}} lint` — must pass  
+3. `{{packageManager}} test` — must pass
+
+Never commit if any check fails without explicit user consent.
+
+## Forbidden without explicit confirmation
+- `git push --force`
+- `git reset --hard` on pushed commits
+- `git rebase` on pushed branches
+- Merging into `main`

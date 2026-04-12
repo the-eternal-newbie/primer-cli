@@ -1,0 +1,29 @@
+# /git-finish-work
+
+Finalize a branch, push it, and open a PR.
+
+## Usage
+
+`/git-finish-work`
+
+## Steps
+
+1. Confirm we're not on `main` — if we are, stop
+2. Run all pre-commit checks one final time:
+   - `{{packageManager}} typecheck`
+   - `{{packageManager}} lint`
+   - `{{packageManager}} test`
+   - `{{packageManager}} build`
+   - If any fails, stop and report
+3. Check for uncommitted changes — if any, ask the user whether to commit them
+4. `git push -u origin <branch-name>` — if push fails, stop (no force push)
+5. Open PR via GitHub CLI:
+    gh pr create --base main --head <branch> --title "<title>" --body "<body>"
+    PR body must include: what changed, why, follow-ups, confirmation checks pass
+6. Report the PR URL
+7. Tell the user: "Review in GitHub UI, squash-merge when ready, delete branch after merge."
+
+## Do not
+- Merge the PR — that's the user's job
+- Force push
+- Skip final checks
