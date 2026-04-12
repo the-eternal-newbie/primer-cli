@@ -1,0 +1,24 @@
+{
+    "name": "@primer/cli",
+    "version": "0.1.0",
+    "private": false,
+    "type": "module",
+    "bin": {
+      "primer": "./dist/index.js"
+    },
+    "scripts": {
+      "build": "tsup",
+      "dev": "tsup --watch",
+      "typecheck": "tsc --noEmit",
+      "lint": "eslint src",
+      "clean": "rm -rf dist"
+    },
+    "dependencies": {
+      "@clack/prompts": "^0.9",
+      "@primer/templates": "workspace:*"
+    },
+    "devDependencies": {
+      "tsup": "^8",
+      "typescript": "^5"
+    }
+  }
