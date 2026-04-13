@@ -39,7 +39,9 @@ describe("resolvePackageManagerVersion", () => {
   });
 
   it("returns latest for unknown package manager with real runner", () => {
-    const version = resolvePackageManagerVersion("unknown-pm-xyz");
+    const version = resolvePackageManagerVersion("unknown-pm-xyz", () => {
+        throw new Error("not found");
+    });
     assert.equal(version, "latest");
   });
 });
