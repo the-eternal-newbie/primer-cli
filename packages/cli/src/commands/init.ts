@@ -3,53 +3,11 @@ import { join } from "node:path";
 import { existsSync } from "node:fs";
 import { getTemplatesRoot } from "../lib/resolve.ts";
 import {
-  renderTemplate,
-  writeOutputFile,
-  copyStaticFile,
+  scaffoldDir,
   resolvePackageManagerVersion,
   resolvePackageManagerRun,
-  AI_TOOL_GATES,
-  PACKAGE_MANAGER_GATES,
-  DOTFILE_RENAMES,
 } from "../lib/scaffold.ts";
-import type { AiTool, PackageManager, ScaffoldContext } from "../lib/scaffold.ts";
-
-async function scaffoldDir(
-  templateDir: string,
-  outputDir: string,
-  context: ScaffoldContext
-): Promise<void> {
-  const { readdir } = await import("node:fs/promises");
-  const entries = await readdir(templateDir, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const srcPath = join(templateDir, entry.name);
-    const strippedName = entry.name.endsWith(".hbs")
-      ? entry.name.slice(0, -4)
-      : entry.name;
-    const outName = DOTFILE_RENAMES[strippedName] ?? strippedName;
-    const outPath = join(outputDir, outName);
-
-    if (entry.isDirectory()) {
-      const requiredTool = AI_TOOL_GATES[entry.name];
-      if (requiredTool && !context.aiTools.includes(requiredTool)) {
-        continue;
-      }
-      await scaffoldDir(srcPath, outPath, context);
-    } else {
-      const requiredPm = PACKAGE_MANAGER_GATES[outName];
-      if (requiredPm && context.packageManager !== requiredPm) {
-        continue;
-      }
-      if (entry.name.endsWith(".hbs")) {
-        const rendered = await renderTemplate(srcPath, context);
-        await writeOutputFile(outPath, rendered);
-      } else {
-        await copyStaticFile(srcPath, outPath);
-      }
-    }
-  }
-}
+import type { ScaffoldContext, AiTool, PackageManager } from "../lib/scaffold.ts";
 
 export async function runInit(): Promise<void> {
   p.intro("primer — scaffold an AI-ready project");
