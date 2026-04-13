@@ -39,17 +39,19 @@ npm version "$VERSION" --no-git-tag-version \
 npm version "$VERSION" --no-git-tag-version \
   --prefix packages/templates
 
-# Update templates dependency in cli package.json
-# to match the new version exactly
+# Pin templates dependency to exact version in cli package.json
 node -e "
   const fs = require('fs');
   const pkg = JSON.parse(fs.readFileSync('packages/cli/package.json', 'utf8'));
-  pkg.dependencies['@monomit/primer-templates'] = '^$VERSION';
+  pkg.dependencies['@monomit/primer-templates'] = '$VERSION';
   fs.writeFileSync('packages/cli/package.json', JSON.stringify(pkg, null, 2) + '\n');
 "
 
-# Commit the version bump
-git add packages/cli/package.json packages/templates/package.json
+# Regenerate lockfile to reflect version bumps
+pnpm install --lockfile-only
+
+# Commit the version bump and updated lockfile
+git add packages/cli/package.json packages/templates/package.json pnpm-lock.yaml
 git commit -m "chore(primer): release v$VERSION"
 
 # Create and push the tag
@@ -60,4 +62,4 @@ git push origin "v$VERSION"
 echo ""
 echo "Done. v$VERSION tagged and pushed."
 echo "GitHub Actions will publish to npm automatically."
-echo "Monitor progress at: https://github.com/$(git remote get-url origin | sed 's/.*github.com[:/]//' | sed 's/.git$//')/actions"
+echo "Monitor progress at: https://github.com/$(git remote get-url origin | sed 's/.*github.com[:/]//' | sed 's/\.git$//')/actions"
