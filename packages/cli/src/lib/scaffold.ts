@@ -32,10 +32,13 @@ export const DOTFILE_RENAMES: Record<string, string> = {
   npmrc: ".npmrc",
 } as const;
 
-export function resolvePackageManagerVersion(pm: string): string {
+export function resolvePackageManagerVersion(
+  pm: string,
+  runner: (cmd: string) => string = (cmd) =>
+    execSync(cmd, { stdio: "pipe" }).toString().trim()
+): string {
   try {
-    const result = execSync(`${pm} --version`, { stdio: "pipe" });
-    return result.toString().trim();
+    return runner(`${pm} --version`);
   } catch {
     return "latest";
   }

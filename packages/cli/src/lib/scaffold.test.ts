@@ -23,20 +23,25 @@ describe("resolvePackageManagerRun", () => {
 });
 
 describe("resolvePackageManagerVersion", () => {
-    it("returns a semver string or latest for pnpm", () => {
-      const version = resolvePackageManagerVersion("pnpm");
-      const isSemver = /^\d+\.\d+\.\d+/.test(version);
-      const isLatest = version === "latest";
-      assert.ok(
-        isSemver || isLatest,
-        `expected semver or "latest", got "${version}"`
-      );
+  it("returns the runner output on success", () => {
+    const version = resolvePackageManagerVersion(
+      "pnpm",
+      () => "10.33.0"
+    );
+    assert.equal(version, "10.33.0");
+  });
+
+  it("returns latest when runner throws", () => {
+    const version = resolvePackageManagerVersion("pnpm", () => {
+      throw new Error("not found");
     });
-  
-    it("returns latest for unknown package manager", () => {
-      const version = resolvePackageManagerVersion("unknown-pm-xyz");
-      assert.equal(version, "latest");
-    });
+    assert.equal(version, "latest");
+  });
+
+  it("returns latest for unknown package manager with real runner", () => {
+    const version = resolvePackageManagerVersion("unknown-pm-xyz");
+    assert.equal(version, "latest");
+  });
 });
 
 describe("DOTFILE_RENAMES", () => {
