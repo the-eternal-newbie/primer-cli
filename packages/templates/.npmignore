@@ -1,0 +1,7 @@
+.turbo/
+!cli-tool/.gitignore
+!cli-tool/.gitattributes
+!cli-tool/.nvmrc
+!cli-tool/.npmrc
+!cli-tool/.cursor/
+!cli-tool/.claude/
