@@ -11,7 +11,7 @@
     "node": ">=22"
   },
   "bin": {
-    "primer": "./dist/index.js"
+    "primer": "dist/index.js"
   },
   "scripts": {
     "build": "tsup",
