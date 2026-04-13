@@ -1,5 +1,5 @@
 {
-  "name": "@primer/cli",
+  "name": "@monomit/primer",
   "version": "0.1.0",
   "private": false,
   "type": "module",
@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^0.9",
-    "@primer/templates": "workspace:*",
+    "@monomit/primer-templates": "workspace:*",
     "mustache": "^4"
   },
   "devDependencies": {
