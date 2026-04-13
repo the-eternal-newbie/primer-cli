@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^0.9",
-    "@monomit/primer-templates": "workspace:*",
+    "@monomit/primer-templates": "^0.1.0",
     "mustache": "^4"
   },
   "devDependencies": {
