@@ -31,6 +31,16 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
   exit 1
 fi
 
+# Ensure local master is exactly up-to-date with origin/master
+git fetch origin master
+LOCAL_HEAD=$(git rev-parse HEAD)
+REMOTE_HEAD=$(git rev-parse origin/master)
+if [ "$LOCAL_HEAD" != "$REMOTE_HEAD" ]; then
+  echo "Error: local master is not up-to-date with origin/master"
+  echo "Please pull the latest changes so HEAD matches origin/master before releasing"
+  exit 1
+fi
+
 echo "Releasing v$VERSION..."
 
 # Bump versions in both packages
