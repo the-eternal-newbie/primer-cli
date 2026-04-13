@@ -27,6 +27,13 @@ export const PACKAGE_MANAGER_GATES: Record<string, PackageManager> = {
   ".npmrc": "pnpm",
 } as const;
 
+// Files that must be renamed during scaffolding to add a dot prefix.
+// These are stored without the dot in the template to avoid npm ignoring them.
+export const DOTFILE_RENAMES: Record<string, string> = {
+  gitignore: ".gitignore",
+  npmrc: ".npmrc",
+} as const;
+
 export function resolvePackageManagerVersion(pm: string): string {
   try {
     const result = execSync(`${pm} --version`, { stdio: "pipe" });
