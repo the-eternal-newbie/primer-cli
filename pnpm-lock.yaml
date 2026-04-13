@@ -18,8 +18,8 @@ importers:
         specifier: ^0.9
         version: 0.9.1
       '@monomit/primer-templates':
-        specifier: workspace:*
-        version: link:../templates
+        specifier: ^0.1.0
+        version: 0.1.0
       mustache:
         specifier: ^4
         version: 4.2.0
@@ -278,6 +278,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@monomit/primer-templates@0.1.0':
+    resolution: {integrity: sha512-8s4Dv8m+FOH0jSl6l3ITWcGXkJx2BSftvRf3gNNdMNkC+CVJiEGMWEC+QnM+yUPT3mAkND0wPliarsE0htK69w==}
 
   '@rollup/rollup-android-arm-eabi@4.60.1':
     resolution: {integrity: sha512-d6FinEBLdIiK+1uACUttJKfgZREXrF0Qc2SmLII7W2AD8FfiZ9Wjd+rD/iRuf5s5dWrr1GgwXCvPqOuDquOowA==}
@@ -1187,6 +1190,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
+
+  '@monomit/primer-templates@0.1.0': {}
 
   '@rollup/rollup-android-arm-eabi@4.60.1':
     optional: true
