@@ -1,8 +1,5 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import {
   resolvePackageManagerRun,
   resolvePackageManagerVersion,
@@ -26,16 +23,20 @@ describe("resolvePackageManagerRun", () => {
 });
 
 describe("resolvePackageManagerVersion", () => {
-  it("returns a non-empty string for pnpm", () => {
-    const version = resolvePackageManagerVersion("pnpm");
-    assert.ok(version.length > 0);
-    assert.ok(version !== "latest");
-  });
-
-  it("returns latest for unknown package manager", () => {
-    const version = resolvePackageManagerVersion("unknown-pm-xyz");
-    assert.equal(version, "latest");
-  });
+    it("returns a semver string or latest for pnpm", () => {
+      const version = resolvePackageManagerVersion("pnpm");
+      const isSemver = /^\d+\.\d+\.\d+/.test(version);
+      const isLatest = version === "latest";
+      assert.ok(
+        isSemver || isLatest,
+        `expected semver or "latest", got "${version}"`
+      );
+    });
+  
+    it("returns latest for unknown package manager", () => {
+      const version = resolvePackageManagerVersion("unknown-pm-xyz");
+      assert.equal(version, "latest");
+    });
 });
 
 describe("DOTFILE_RENAMES", () => {

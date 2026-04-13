@@ -3,16 +3,11 @@ import assert from "node:assert/strict";
 import { mkdtemp, rm, access, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createRequire } from "node:module";
 import { scaffoldDir } from "../lib/scaffold.ts";
+import { getTemplatesRoot } from "../lib/resolve.ts";
 import type { ScaffoldContext } from "../lib/scaffold.ts";
 
-const require = createRequire(import.meta.url);
-const templatesRoot = join(
-  require.resolve("@primer/templates"),
-  "..",
-  "cli-tool"
-);
+const templatesRoot = getTemplatesRoot("cli-tool");
 
 async function exists(p: string): Promise<boolean> {
   try {
