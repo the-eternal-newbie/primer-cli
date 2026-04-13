@@ -57,7 +57,12 @@ if (values.version) {
 const command = positionals[0];
 
 if (!command || command === "init") {
-  runInit();
+  try {
+    await runInit();
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
 } else {
   console.error(`Unknown command: ${command}`);
   console.error(`Run "primer --help" for usage.`);
