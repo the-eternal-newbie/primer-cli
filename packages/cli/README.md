@@ -18,5 +18,6 @@ npx @primer/cli init
 
 ## Requirements
 
-- Node.js 20+
+- Node.js 20+ to run the published CLI
+- Node.js 22+ to work in this repository
 - Git

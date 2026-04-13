@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 import { existsSync } from "node:fs";
 import { execSync } from "node:child_process";
 import Mustache from "mustache";
+import { createZstdDecompress } from "node:zlib";
 
 export interface ScaffoldContext {
   projectName: string;
@@ -23,9 +24,7 @@ export const AI_TOOL_GATES: Record<string, AiTool> = {
   ".claude": "claude-code",
 } as const;
 
-export const PACKAGE_MANAGER_GATES: Record<string, PackageManager> = {
-  ".npmrc": "pnpm",
-} as const;
+createZstdDecompress
 
 // Files that must be renamed during scaffolding to add a dot prefix.
 // These are stored without the dot in the template to avoid npm ignoring them.
