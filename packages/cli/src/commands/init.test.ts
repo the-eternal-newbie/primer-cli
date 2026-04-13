@@ -1,0 +1,132 @@
+import { describe, it, before, after } from "node:test";
+import assert from "node:assert/strict";
+import { mkdtemp, rm, access, readFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { createRequire } from "node:module";
+import { scaffoldDir } from "../lib/scaffold.ts";
+import type { ScaffoldContext } from "../lib/scaffold.ts";
+
+const require = createRequire(import.meta.url);
+const templatesRoot = join(
+  require.resolve("@primer/templates"),
+  "..",
+  "cli-tool"
+);
+
+async function exists(p: string): Promise<boolean> {
+  try {
+    await access(p);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+describe("scaffold integration", () => {
+  let tmpDir: string;
+
+  before(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "primer-test-"));
+  });
+
+  after(async () => {
+    await rm(tmpDir, { recursive: true, force: true });
+  });
+
+  it("generates correct file tree for cursor-only pnpm project", async () => {
+    const outDir = join(tmpDir, "test-cursor");
+    const context: ScaffoldContext = {
+      projectName: "test-cursor",
+      packageManager: "pnpm",
+      packageManagerVersion: "10.0.0",
+      packageManagerRun: "pnpm",
+      aiTools: ["cursor"],
+      cursorEnabled: true,
+      claudeEnabled: false,
+      initGit: false,
+    };
+
+    await scaffoldDir(templatesRoot, outDir, context);
+
+    assert.ok(await exists(join(outDir, ".cursor/rules/core.mdc")));
+    assert.ok(await exists(join(outDir, ".cursor/rules/git-discipline.mdc")));
+    assert.ok(await exists(join(outDir, ".cursor/commands/git-start-work.md")));
+    assert.ok(!await exists(join(outDir, ".claude")));
+    assert.ok(await exists(join(outDir, ".gitignore")));
+    assert.ok(await exists(join(outDir, ".npmrc")));
+    assert.ok(await exists(join(outDir, "AGENTS.md")));
+    assert.ok(await exists(join(outDir, "package.json")));
+    assert.ok(await exists(join(outDir, "src/index.ts")));
+  });
+
+  it("generates correct file tree for claude-only npm project", async () => {
+    const outDir = join(tmpDir, "test-claude");
+    const context: ScaffoldContext = {
+      projectName: "test-claude",
+      packageManager: "npm",
+      packageManagerVersion: "10.0.0",
+      packageManagerRun: "npm run",
+      aiTools: ["claude-code"],
+      cursorEnabled: false,
+      claudeEnabled: true,
+      initGit: false,
+    };
+
+    await scaffoldDir(templatesRoot, outDir, context);
+
+    assert.ok(await exists(join(outDir, ".claude/CLAUDE.md")));
+    assert.ok(await exists(join(outDir, ".claude/commands/git-start-work.md")));
+    assert.ok(!await exists(join(outDir, ".cursor")));
+    assert.ok(!await exists(join(outDir, ".npmrc")));
+
+    const commitProgress = await readFile(
+      join(outDir, ".claude/commands/git-commit-progress.md"),
+      "utf-8"
+    );
+    assert.ok(commitProgress.includes("npm run typecheck"));
+    assert.ok(commitProgress.includes("npm run lint"));
+  });
+
+  it("generates both tool directories when both selected", async () => {
+    const outDir = join(tmpDir, "test-both");
+    const context: ScaffoldContext = {
+      projectName: "test-both",
+      packageManager: "pnpm",
+      packageManagerVersion: "10.0.0",
+      packageManagerRun: "pnpm",
+      aiTools: ["cursor", "claude-code"],
+      cursorEnabled: true,
+      claudeEnabled: true,
+      initGit: false,
+    };
+
+    await scaffoldDir(templatesRoot, outDir, context);
+
+    assert.ok(await exists(join(outDir, ".cursor/rules/core.mdc")));
+    assert.ok(await exists(join(outDir, ".claude/CLAUDE.md")));
+  });
+
+  it("substitutes projectName in rendered templates", async () => {
+    const outDir = join(tmpDir, "test-render");
+    const context: ScaffoldContext = {
+      projectName: "my-special-project",
+      packageManager: "pnpm",
+      packageManagerVersion: "10.0.0",
+      packageManagerRun: "pnpm",
+      aiTools: ["cursor"],
+      cursorEnabled: true,
+      claudeEnabled: false,
+      initGit: false,
+    };
+
+    await scaffoldDir(templatesRoot, outDir, context);
+
+    const agentsMd = await readFile(join(outDir, "AGENTS.md"), "utf-8");
+    assert.ok(agentsMd.includes("my-special-project"));
+    assert.ok(!agentsMd.includes("{{projectName}}"));
+
+    const packageJson = await readFile(join(outDir, "package.json"), "utf-8");
+    assert.ok(packageJson.includes('"name": "my-special-project"'));
+  });
+});
