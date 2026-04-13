@@ -10,6 +10,7 @@ import {
   resolvePackageManagerRun,
   AI_TOOL_GATES,
   PACKAGE_MANAGER_GATES,
+  DOTFILE_RENAMES,
 } from "../lib/scaffold.ts";
 import type { AiTool, PackageManager, ScaffoldContext } from "../lib/scaffold.ts";
 
@@ -23,9 +24,10 @@ async function scaffoldDir(
 
   for (const entry of entries) {
     const srcPath = join(templateDir, entry.name);
-    const outName = entry.name.endsWith(".hbs")
+    const strippedName = entry.name.endsWith(".hbs")
       ? entry.name.slice(0, -4)
       : entry.name;
+    const outName = DOTFILE_RENAMES[strippedName] ?? strippedName;
     const outPath = join(outputDir, outName);
 
     if (entry.isDirectory()) {
@@ -35,12 +37,10 @@ async function scaffoldDir(
       }
       await scaffoldDir(srcPath, outPath, context);
     } else {
-      // Check file-level gates using the output name (without .hbs)
       const requiredPm = PACKAGE_MANAGER_GATES[outName];
       if (requiredPm && context.packageManager !== requiredPm) {
         continue;
       }
-
       if (entry.name.endsWith(".hbs")) {
         const rendered = await renderTemplate(srcPath, context);
         await writeOutputFile(outPath, rendered);
