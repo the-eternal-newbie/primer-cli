@@ -1,5 +1,5 @@
 {
-    "name": "@primer/templates",
+    "name": "@monomit/primer-templates",
     "version": "0.1.0",
     "private": false,
     "type": "module",
