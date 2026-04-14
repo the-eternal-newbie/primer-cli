@@ -26,6 +26,11 @@ export const AVAILABLE_SKILLS = [
     label: "Frontend",
     hint: "RSC boundary, hydration, FSD architecture, Core Web Vitals, accessibility",
   },
+  {
+    value: "testing",
+    label: "Testing",
+    hint: "AI code failures, mutation testing, contract testing, flakiness diagnosis",
+  },
 ] as const;
 
 export type SkillName = typeof AVAILABLE_SKILLS[number]["value"];
