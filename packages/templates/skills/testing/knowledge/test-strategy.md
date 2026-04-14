@@ -44,35 +44,46 @@ Wrap each test in a database transaction and roll back after the test.
 The database never sees the data — no cleanup required.
 
 ```typescript
-// Vitest with Prisma
-import { beforeEach, afterEach } from 'vitest';
+// Vitest with Prisma — correct rollback pattern
+import { test, expect } from 'vitest';
 import { prisma } from '@/shared/api/client';
 
-let tx: Awaited<ReturnType<typeof prisma.$transaction>>;
+// Sentinel error used to force rollback after each test body completes
+const ROLLBACK = new Error('rollback test transaction');
 
-beforeEach(async () => {
-  // Start a transaction — all test operations use this transaction
-  tx = prisma.$transaction(async (transaction) => {
-    // Tests run inside this callback
+// Wrapper that runs each test inside a transaction and rolls it back
+async function testWithRollback(
+  name: string,
+  fn: (tx: typeof prisma) => Promise<void>
+) {
+  test(name, async () => {
+    try {
+      await prisma.$transaction(async (tx) => {
+        // All DB operations inside fn use the tx client
+        await fn(tx as unknown as typeof prisma);
+        // Force rollback after the test body — no data persists
+        throw ROLLBACK;
+      });
+    } catch (error) {
+      if (error !== ROLLBACK) throw error;
+    }
   });
-});
+}
 
-afterEach(async () => {
-  // Roll back automatically by throwing from the transaction
-  await tx.catch(() => {}); // discard result
+// Usage
+testWithRollback('creates a user', async (tx) => {
+  const user = await tx.user.create({
+    data: { email: 'test@example.com', name: 'Test User' },
+  });
+  expect(user.email).toBe('test@example.com');
+  // Transaction is rolled back — user never persists to the database
 });
 ```
 
-### Database Snapshots (thorough)
-Take a snapshot of the database state before each test suite and
-restore it after. Works with any database operation including DDL.
-
-```bash
-# PostgreSQL snapshot per test suite
-pg_dump test_db > snapshot.sql
-# After suite:
-psql test_db < snapshot.sql
-```
+**Key requirement:** All database access inside the test must use the
+`tx` client passed to the callback — not the global `prisma` client.
+Operations on the global `prisma` client will run outside the transaction
+and will not be rolled back.
 
 ### In-Memory Database (fastest, most isolated)
 Use an in-memory SQLite database for tests that don't require

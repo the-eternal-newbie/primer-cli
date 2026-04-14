@@ -75,20 +75,32 @@ describe('UserService contract — PaymentService consumer', () => {
 
 ```typescript
 // tests/contracts/user-service.provider.test.ts
-import { PactV3 } from '@pact-foundation/pact';
-
-const verifier = new PactV3({
-  provider: 'UserService',
-  providerBaseUrl: 'http://localhost:3001', // real UserService running
-  pactUrls: ['./pacts/PaymentService-UserService.json'],
-  // Or fetch from Pact Broker:
-  // pactBrokerUrl: process.env.PACT_BROKER_URL,
-  // publishVerificationResult: true,
-  // providerVersion: process.env.GIT_SHA,
-});
+// tests/contracts/user-service.provider.test.ts
+import { Verifier } from '@pact-foundation/pact';
+import { startServer, stopServer } from '../helpers/server';
 
 describe('UserService — provider verification', () => {
+  let server: { port: number };
+
+  beforeAll(async () => {
+    server = await startServer();
+  });
+
+  afterAll(async () => {
+    await stopServer();
+  });
+
   it('satisfies all consumer contracts', async () => {
+    const verifier = new Verifier({
+      provider: 'UserService',
+      providerBaseUrl: `http://localhost:${server.port}`,
+      pactUrls: ['./pacts/PaymentService-UserService.json'],
+      // Or fetch from Pact Broker:
+      // pactBrokerUrl: process.env.PACT_BROKER_URL,
+      // publishVerificationResult: true,
+      // providerVersion: process.env.GIT_SHA,
+    });
+
     await verifier.verifyProvider();
   });
 });

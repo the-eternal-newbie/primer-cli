@@ -53,19 +53,22 @@ race conditions to understand what the test data must stress-test.
 4. Implement transaction rollback isolation for integration tests:
 ```typescript
    // tests/setup/database.ts
-   import { beforeEach, afterEach } from 'vitest';
    import { prisma } from '@/shared/api/client';
 
-   export function useIsolatedDatabase() {
-     beforeEach(async () => {
-       // Begin transaction — all test operations run inside it
-       await prisma.$executeRaw`BEGIN`;
-     });
+   const ROLLBACK = new Error('rollback test transaction');
 
-     afterEach(async () => {
-       // Roll back — no data persists between tests
-       await prisma.$executeRaw`ROLLBACK`;
-     });
+   // Use this wrapper in place of individual beforeEach/afterEach pairs
+   export async function withIsolatedDatabase(
+     fn: (tx: typeof prisma) => Promise<void>
+   ): Promise<void> {
+     try {
+       await prisma.$transaction(async (tx) => {
+         await fn(tx as unknown as typeof prisma);
+         throw ROLLBACK; // always roll back after the test
+       });
+     } catch (error) {
+       if (error !== ROLLBACK) throw error;
+     }
    }
 ```
 
@@ -98,20 +101,25 @@ race conditions to understand what the test data must stress-test.
 ```typescript
    describe('Payment flow', () => {
      it('prevents overdraft', async () => {
-       // Seed exactly the state this test needs
-       const user = await createUser({ plan: 'free' });
-       const account = await createAccount({
-         userId: user.id,
-         balance: 50_00, // $50.00 in cents
-       });
+       await withIsolatedDatabase(async (tx) => {
+         // All operations use tx — rolled back after this test
+         const user = await tx.user.create({ data: buildUser() });
+         const account = await tx.account.create({
+           data: { userId: user.id, balance: 50_00 },
+         });
 
-       // Test the specific scenario
-       await expect(
-         transferFunds(account.id, 'other-account', 100_00)
-       ).rejects.toThrow('Insufficient funds');
+         await expect(
+           transferFunds(account.id, 'other-account', 100_00, tx)
+         ).rejects.toThrow('Insufficient funds');
+       });
      });
    });
 ```
+
+**Key requirement:** Pass the `tx` client through to all service
+functions being tested. Service functions that use the global `prisma`
+client directly will not participate in the transaction and their
+writes will persist to the database.
 
 7. Generate bulk data for load and performance tests:
 ```typescript
