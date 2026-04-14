@@ -163,7 +163,7 @@ Quarantined tests must be:
 
 ## CI Pipeline Speed Limits
 
-Critical feedback path target: **5-10 minutes** from push to result.
+Critical feedback path target: **5 minutes or less** from push to result.
 
 **Parallelization strategy:**
 
