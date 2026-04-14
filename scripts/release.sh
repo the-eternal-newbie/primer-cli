@@ -37,7 +37,7 @@ LOCAL_HEAD=$(git rev-parse HEAD)
 REMOTE_HEAD=$(git rev-parse origin/master)
 if [ "$LOCAL_HEAD" != "$REMOTE_HEAD" ]; then
   echo "Error: local master is not up-to-date with origin/master"
-  echo "Please pull the latest changes so HEAD matches origin/master before releasing"
+  echo "Please pull the latest changes before releasing"
   exit 1
 fi
 
@@ -57,19 +57,25 @@ node -e "
   fs.writeFileSync('packages/cli/package.json', JSON.stringify(pkg, null, 2) + '\n');
 "
 
-# Regenerate lockfile to reflect version bumps
+# Publish templates first so cli can resolve it during lockfile regeneration
+echo "Publishing @monomit/primer-templates@$VERSION..."
+cd packages/templates
+npm publish --access public
+cd ../..
+
+# Now regenerate lockfile — templates is live on registry so resolution works
 pnpm install --lockfile-only
 
 # Commit the version bump and updated lockfile
 git add packages/cli/package.json packages/templates/package.json pnpm-lock.yaml
 git commit -m "chore(primer): release v$VERSION"
 
-# Create and push the tag
+# Create and push the tag — GitHub Actions publishes @monomit/primer
 git tag "v$VERSION"
 git push origin master
 git push origin "v$VERSION"
 
 echo ""
-echo "Done. v$VERSION tagged and pushed."
-echo "GitHub Actions will publish to npm automatically."
-echo "Monitor progress at: https://github.com/$(git remote get-url origin | sed 's/.*github.com[:/]//' | sed 's/\.git$//')/actions"
+echo "Done. @monomit/primer-templates@$VERSION published directly."
+echo "GitHub Actions will publish @monomit/primer@$VERSION on tag push."
+echo "Monitor: https://github.com/$(git remote get-url origin | sed 's/.*github.com[:/]//' | sed 's/\.git$//')/actions"
