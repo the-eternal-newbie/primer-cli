@@ -1,4 +1,12 @@
 #!/usr/bin/env node
+// Suppress Node.js experimental fetch warning — fetch is stable enough for our use
+process.removeAllListeners("warning");
+process.on("warning", (warning) => {
+  if (warning.name === "ExperimentalWarning" && warning.message.includes("Fetch")) return;
+  console.warn(warning.name, warning.message);
+});
+
+
 /* eslint-disable no-console */
 import { parseArgs } from "node:util";
 import { readFileSync } from "node:fs";
