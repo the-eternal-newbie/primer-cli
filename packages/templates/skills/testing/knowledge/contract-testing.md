@@ -75,7 +75,6 @@ describe('UserService contract — PaymentService consumer', () => {
 
 ```typescript
 // tests/contracts/user-service.provider.test.ts
-// tests/contracts/user-service.provider.test.ts
 import { Verifier } from '@pact-foundation/pact';
 import { startServer, stopServer } from '../helpers/server';
 
