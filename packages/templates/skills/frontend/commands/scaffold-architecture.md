@@ -5,9 +5,8 @@ structure, path aliases, and layer boundary enforcement.
 
 ## Before executing
 
-Read `docs/skills/frontend/knowledge/architecture.md` in full.
-Read `docs/skills/frontend/knowledge/rsc-boundary.md` section on
-Next.js App Router and FSD reconciliation.
+Read `docs/skills/frontend/knowledge/architecture.md` in full —
+particularly the "FSD with Next.js App Router" section.
 
 ## Steps
 
@@ -38,18 +37,39 @@ Next.js App Router and FSD reconciliation.
    }
 ```
 
-3. Configure the same aliases in `next.config.ts`:
+3. Verify Next.js picks up the tsconfig.json path aliases automatically:
+```bash
+   pnpm build 2>&1 | grep -i "alias\|cannot find module"
+```
+   Next.js reads `tsconfig.json` `paths` automatically via its
+   built-in webpack configuration — no additional `next.config.ts`
+   changes are needed for path aliases. If imports fail to resolve,
+   verify `baseUrl` is set to `"."` in `tsconfig.json` and restart
+   the dev server.
+
+   For non-Next.js setups or custom webpack configurations that do
+   not read tsconfig paths automatically:
 ```typescript
+   // next.config.ts (only needed if automatic resolution fails)
+   import path from 'node:path';
    import type { NextConfig } from 'next';
 
    const config: NextConfig = {
-     experimental: {
-       typedRoutes: true,
+     webpack(webpackConfig) {
+       webpackConfig.resolve.alias = {
+         ...webpackConfig.resolve.alias,
+         '@/app': path.resolve('./src/app'),
+         '@/pages': path.resolve('./src/pages'),
+         '@/widgets': path.resolve('./src/widgets'),
+         '@/features': path.resolve('./src/features'),
+         '@/entities': path.resolve('./src/entities'),
+         '@/shared': path.resolve('./src/shared'),
+       };
+       return webpackConfig;
      },
    };
 
    export default config;
-   // next.config.ts reads tsconfig.json paths automatically
 ```
 
 4. Install and configure the FSD ESLint plugin to enforce

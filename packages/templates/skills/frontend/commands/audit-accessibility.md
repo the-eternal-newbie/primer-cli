@@ -13,30 +13,54 @@ components and propagate to the entire application.
 
 1. Install automated accessibility scanning:
 ```bash
-   pnpm add -D @axe-core/react axe-playwright
+   pnpm add -D @axe-core/react @axe-core/playwright
 ```
 
    Configure axe in development:
 ```typescript
-   // src/app/providers.tsx
-   if (process.env.NODE_ENV !== 'production') {
-     const { default: ReactDOM } = await import('react-dom');
-     const axe = await import('@axe-core/react');
-     axe.default(React, ReactDOM, 1000);
-     // Reports violations to the browser console
+   // src/app/axe-provider.tsx
+   'use client'
+   import { useEffect } from 'react';
+
+   export function AxeProvider({ children }: { children: React.ReactNode }) {
+     useEffect(() => {
+       if (process.env.NODE_ENV !== 'production') {
+         (async () => {
+           const React = (await import('react')).default;
+           const ReactDOM = (await import('react-dom')).default;
+           const axe = (await import('@axe-core/react')).default;
+           await axe(React, ReactDOM, 1000);
+         })();
+       }
+     }, []);
+
+     return <>{children}</>;
+   }
+
+   // src/app/layout.tsx — wrap with AxeProvider in development only
+   import { AxeProvider } from './axe-provider';
+
+   export default function RootLayout({ children }) {
+     return (
+       
+         
+           {children}
+         
+       
+     );
    }
 ```
 
 2. Run automated scan and triage violations:
 ```bash
    # Playwright accessibility audit
-   pnpm exec playwright test --grep "a11y"
+   pnpm add -D @axe-core/react @axe-core/playwright
 ```
 
 ```typescript
    // tests/a11y/pages.test.ts
    import { test, expect } from '@playwright/test';
-   import AxeBuilder from '@axe-playwright/playwright';
+   import AxeBuilder from '@axe-core/playwright';
 
    test('homepage has no accessibility violations', async ({ page }) => {
      await page.goto('/');

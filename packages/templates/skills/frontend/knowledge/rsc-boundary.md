@@ -35,7 +35,9 @@ functions cannot be serialized to JSON.
 - DOM nodes
 - Symbols
 - Promises (unless using the `use()` hook pattern)
-- React state (useState, useReducer values)
+- React hooks themselves (useState, useReducer, useEffect) — hooks
+  only run in Client Components and cannot be called in Server
+  Components or passed across the boundary
 - Event handlers
 
 ```typescript

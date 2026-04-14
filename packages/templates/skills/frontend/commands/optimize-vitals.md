@@ -5,9 +5,11 @@ through targeted architectural changes.
 
 ## Before executing
 
-Read `docs/skills/frontend/knowledge/performance.md` in full.
-Read `docs/skills/frontend/knowledge/rsc-boundary.md` sections on
-Next.js caching and async boundaries.
+Read `docs/skills/frontend/knowledge/performance.md` sections on
+"Top-Level Await and Streaming" and "Async Boundaries in Layouts
+Disable Streaming".
+Read `docs/skills/frontend/knowledge/rsc-boundary.md` section on
+Next.js App Router caching.
 
 ## Steps
 
