@@ -47,7 +47,9 @@ Audit database privileges, connection security, and credential exposure.
 5. Verify pg_hba.conf restricts connections to known hosts only:
    - No `trust` authentication method in production
    - No `0.0.0.0/0` or `::/0` host entries
-   - MD5 or SCRAM-SHA-256 required for all non-local connections
+   - `SCRAM-SHA-256` required for all non-local connections
+   - If `MD5` is still present, treat it as a legacy compatibility fallback only
+     and flag it for migration to `SCRAM-SHA-256`
 
 6. Produce a security findings report with severity classification:
    - Critical: superuser application roles, cleartext credentials in code
