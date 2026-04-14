@@ -31,8 +31,9 @@ FLAGS
   --offline   Skip AI agent generation (no API key required)
 
 CONFIGURATION
-  Create primer.config.json in your working directory to override defaults:
+  Create primer.config.json or primer.config.mjs in your working directory:
 
+  primer.config.json:
   {
     "ai": {
       "maxTokens": 8192,
@@ -44,6 +45,11 @@ CONFIGURATION
       "maxRulesPerRuleSet": 5,
       "maxAdditionalRules": 5
     }
+  }
+
+  primer.config.mjs:
+  export default {
+    ai: { maxTokens: 16384, maxAgents: 6 }
   }
 
 ENVIRONMENT VARIABLES
@@ -85,7 +91,10 @@ if (values.version) {
 const command = positionals[0];
 
 if (!command || command === "init") {
-  runInit();
+  runInit().catch((err: unknown) => {
+    console.error("Error:", err instanceof Error ? err.message : String(err));
+    process.exit(1);
+  });
 } else {
   console.error(`Unknown command: ${command}`);
   console.error(`Run "primer --help" for usage.`);

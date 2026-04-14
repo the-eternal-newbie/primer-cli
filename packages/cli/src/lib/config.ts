@@ -40,31 +40,45 @@ function mergeConfig(partial: Partial<PrimerConfig>): PrimerConfig {
     };
 }
 
-export async function loadConfig(cwd: string = process.cwd()): Promise<PrimerConfig> {
-    // 1. Try primer.config.ts (dynamic import)
-    const tsConfig = join(cwd, "primer.config.ts");
-    if (existsSync(tsConfig)) {
+interface ConfigCandidate {
+    path: string;
+    load: () => Promise<PrimerConfig>;
+}
+
+export async function loadConfig(
+    cwd: string = process.cwd()
+): Promise<PrimerConfig> {
+    const candidates: ConfigCandidate[] = [
+        {
+            path: join(cwd, "primer.config.mjs"),
+            load: async () => {
+                const mod = await import(
+                    pathToFileURL(join(cwd, "primer.config.mjs")).href
+                ) as { default: Partial<PrimerConfig> };
+                return mergeConfig(mod.default);
+            },
+        },
+        {
+            path: join(cwd, "primer.config.json"),
+            load: async () => {
+                const raw = await readFile(join(cwd, "primer.config.json"), "utf-8");
+                return mergeConfig(JSON.parse(raw) as Partial<PrimerConfig>);
+            },
+        },
+    ];
+
+    for (const candidate of candidates) {
+        if (!existsSync(candidate.path)) continue;
         try {
-            const mod = await import(pathToFileURL(tsConfig).href) as {
-                default: Partial<PrimerConfig>;
-            };
-            return mergeConfig(mod.default);
-        } catch {
-            // fall through to next option
+            return await candidate.load();
+        } catch (err) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                `Warning: found ${candidate.path} but could not load it: ${err instanceof Error ? err.message : String(err)
+                }. Using defaults.`
+            );
         }
     }
 
-    // 2. Try primer.config.json
-    const jsonConfig = join(cwd, "primer.config.json");
-    if (existsSync(jsonConfig)) {
-        try {
-            const raw = await readFile(jsonConfig, "utf-8");
-            return mergeConfig(JSON.parse(raw) as Partial<PrimerConfig>);
-        } catch {
-            // fall through to defaults
-        }
-    }
-
-    // 3. Return defaults
     return DEFAULT_CONFIG;
 }

@@ -3,15 +3,15 @@ import { writeOutputFile } from "../scaffold.ts";
 import type { AgentRole, AgentCommand, AgentRule, AIGenerationResult } from "./types.ts";
 
 function renderAgentDoc(role: AgentRole): string {
-  const commandList = role.commands
-    .map((c) => `| \`/${c.slug}\` | ${c.description} |`)
-    .join("\n");
+    const commandList = role.commands
+        .map((c) => `| \`/${c.slug}\` | ${c.description} |`)
+        .join("\n");
 
-  const ruleList = role.rules
-    .map((r) => `- ${r.description}`)
-    .join("\n");
+    const ruleList = role.rules
+        .map((r) => `- ${r.description}`)
+        .join("\n");
 
-  return `# ${role.name} — Agent Role
+    return `# ${role.name} — Agent Role
 
 ## Purpose
 
@@ -51,7 +51,7 @@ ${ruleList}
 }
 
 function renderCommand(command: AgentCommand): string {
-  return `# /${command.slug}
+    return `# /${command.slug}
 
 ${command.description}
 
@@ -65,28 +65,40 @@ ${command.doNot.map((d) => `- ${d}`).join("\n")}
 `;
 }
 
+function sanitizeYamlValue(value: string): string {
+    // Remove characters that break YAML frontmatter
+    return value
+        .replace(/[\r\n]/g, " ")   // no newlines in single-line values
+        .replace(/:/g, "-")         // colons break YAML key-value parsing
+        .replace(/---/g, "—")       // triple-dash would close the frontmatter block
+        .trim();
+}
+
 function renderRule(rule: AgentRule): string {
-  return `---
-description: ${rule.description}
+    const safeDescription = sanitizeYamlValue(rule.description);
+    const safeSlug = sanitizeYamlValue(rule.slug);
+
+    return `---
+description: ${safeDescription}
 globs: ["**/*"]
 alwaysApply: false
 ---
 
-# ${rule.slug}
+# ${safeSlug}
 
 ${rule.rules.map((r) => `- ${r}`).join("\n")}
 `;
 }
 
 function renderAgentIndex(
-  result: AIGenerationResult,
-  projectName: string
+    result: AIGenerationResult,
+    projectName: string
 ): string {
-  const agentList = result.agents
-    .map((a) => `| ${a.name} | \`docs/agents/${a.slug}.md\` | ${a.purpose} |`)
-    .join("\n");
+    const agentList = result.agents
+        .map((a) => `| ${a.name} | \`docs/agents/${a.slug}.md\` | ${a.purpose} |`)
+        .join("\n");
 
-  return `# ${projectName} — Agent Registry
+    return `# ${projectName} — Agent Registry
 
 This file lists all specialized agent roles for this project.
 Each agent reads \`AGENTS.md\` first, then its own role document.
@@ -107,54 +119,54 @@ when crossing boundaries.
 }
 
 export async function writeAgentFiles(
-  outputDir: string,
-  result: AIGenerationResult,
-  projectName: string,
-  cursorEnabled: boolean,
-  claudeEnabled: boolean,
+    outputDir: string,
+    result: AIGenerationResult,
+    projectName: string,
+    cursorEnabled: boolean,
+    claudeEnabled: boolean,
 ): Promise<void> {
-  for (const agent of result.agents) {
-    // Write role document
+    for (const agent of result.agents) {
+        // Write role document
+        await writeOutputFile(
+            join(outputDir, "docs", "agents", `${agent.slug}.md`),
+            renderAgentDoc(agent)
+        );
+
+        // Write commands per tool
+        for (const command of agent.commands) {
+            const content = renderCommand(command);
+
+            if (cursorEnabled) {
+                await writeOutputFile(
+                    join(outputDir, ".cursor", "commands", "agents", agent.slug, `${command.slug}.md`),
+                    content
+                );
+            }
+
+            if (claudeEnabled) {
+                await writeOutputFile(
+                    join(outputDir, ".claude", "commands", "agents", agent.slug, `${command.slug}.md`),
+                    content
+                );
+            }
+        }
+
+        // Write rules per tool
+        for (const rule of agent.rules) {
+            const content = renderRule(rule);
+
+            if (cursorEnabled) {
+                await writeOutputFile(
+                    join(outputDir, ".cursor", "rules", `${agent.slug}-${rule.slug}.mdc`),
+                    content
+                );
+            }
+        }
+    }
+
+    // Write agent registry
     await writeOutputFile(
-      join(outputDir, "docs", "agents", `${agent.slug}.md`),
-      renderAgentDoc(agent)
+        join(outputDir, "docs", "agents", "README.md"),
+        renderAgentIndex(result, projectName)
     );
-
-    // Write commands per tool
-    for (const command of agent.commands) {
-      const content = renderCommand(command);
-
-      if (cursorEnabled) {
-        await writeOutputFile(
-          join(outputDir, ".cursor", "commands", "agents", agent.slug, `${command.slug}.md`),
-          content
-        );
-      }
-
-      if (claudeEnabled) {
-        await writeOutputFile(
-          join(outputDir, ".claude", "commands", "agents", agent.slug, `${command.slug}.md`),
-          content
-        );
-      }
-    }
-
-    // Write rules per tool
-    for (const rule of agent.rules) {
-      const content = renderRule(rule);
-
-      if (cursorEnabled) {
-        await writeOutputFile(
-          join(outputDir, ".cursor", "rules", `${agent.slug}-${rule.slug}.mdc`),
-          content
-        );
-      }
-    }
-  }
-
-  // Write agent registry
-  await writeOutputFile(
-    join(outputDir, "docs", "agents", "README.md"),
-    renderAgentIndex(result, projectName)
-  );
 }
