@@ -30,15 +30,33 @@ functions cannot be serialized to JSON.
 - JSX (React elements — these are serialized as a special format)
 
 **Non-serializable (will throw or cause silent failures):**
-- Functions and arrow functions
+- Ordinary functions, arrow functions, and event handlers passed as props
 - Class instances (including Date objects, Map, Set, RegExp)
 - DOM nodes
 - Symbols
-- Promises (unless using the `use()` hook pattern)
-- React hooks themselves (useState, useReducer, useEffect) — hooks
-  only run in Client Components and cannot be called in Server
-  Components or passed across the boundary
-- Event handlers
+- React hooks (useState, useReducer, useEffect) — hooks only run
+  in Client Components and cannot be called in Server Components
+  or passed across the boundary
+
+**Special case — Server Actions:**
+Server Actions are functions defined with `'use server'` that *can*
+be passed from Server Components to Client Components. They are not
+serialized as function references — Next.js replaces them with a
+special network reference (an RPC stub) at build time. This is why
+they work across the boundary while ordinary functions do not.
+
+```typescript
+// Server Action — crosses the boundary as a special RPC reference
+'use server'
+async function submitForm(formData: FormData) { ... }
+
+// Passing a Server Action as a prop is allowed
+<ClientForm action={submitForm} /> // ✓ works — submitForm is an RPC stub
+
+// Passing an ordinary function as a prop is not allowed
+const handler = () => console.log('clicked');
+<ClientComponent onClick={handler} /> // ✗ fails — not serializable
+```
 
 ```typescript
 // Server Component — WRONG
