@@ -1,0 +1,57 @@
+---
+description: Non-negotiable frontend engineering rules
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# Frontend Rules
+
+These four rules apply to every frontend operation regardless of
+deadline pressure. They are non-negotiable.
+
+## 1. Strict Serialization at the Edge
+
+- Functions, class instances, Date objects, Map, Set, RegExp,
+  and Symbols must never be passed as props from Server Components
+  to Client Components
+- Date values must be serialized to ISO strings before crossing
+  the server/client boundary
+- Event handlers must always be defined inside Client Components —
+  never passed from Server Components
+- Only the minimal data required by the Client Component may cross
+  the boundary — never pass entire database records
+
+## 2. Zero Randomness During SSR
+
+- Math.random() is prohibited in any component render path
+- Date.now() and new Date() without stabilization are prohibited
+  in render paths where the value affects rendered output
+- Random IDs, seeds, or keys must be generated server-side and
+  passed as stable props — never generated during render
+- suppressHydrationWarning may be used only for intentionally
+  dynamic values (timestamps, counters) — never to silence
+  bugs caused by non-deterministic rendering
+
+## 3. Strict CSP and Trusted Types
+
+- Content Security Policy Level 3 with nonce-based script
+  allowlisting must be configured for all production deployments
+- require-trusted-types-for 'script' must be enabled to prevent
+  dangerous DOM sink usage (innerHTML, outerHTML, document.write)
+- inline scripts and styles without nonces are prohibited
+- eval() and Function() constructor are prohibited
+- dangerouslySetInnerHTML requires explicit security review and
+  must sanitize input with DOMPurify before use
+
+## 4. Accessibility as Baseline
+
+- Semantic HTML is always preferred over ARIA — use ARIA only
+  when native HTML elements cannot express the required semantics
+- Color must never be the sole indicator of meaning — always
+  pair color with text, icon, or pattern
+- All interactive elements must be keyboard-navigable and have
+  visible focus indicators with minimum 3:1 contrast ratio
+- All images must have descriptive alt text — decorative images
+  use alt="" (not omitted) to signal intentional decoration
+- Minimum touch target size is 24×24px — recommended 44×44px
+  for primary interactive elements

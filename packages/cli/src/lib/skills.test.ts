@@ -114,4 +114,24 @@ describe("installSkills", () => {
             await rm(backendDir, { recursive: true, force: true });
         }
     });
+
+    it("copies frontend skill files into docs/skills/frontend/", async () => {
+        const frontendDir = await mkdtemp(join(tmpdir(), "primer-frontend-skills-test-"));
+        try {
+            await installSkills(frontendDir, ["frontend"]);
+
+            assert.ok(await exists(join(frontendDir, "docs", "skills", "frontend", "README.md")));
+            assert.ok(await exists(join(frontendDir, "docs", "skills", "frontend", "rules", "frontend.mdc")));
+            assert.ok(await exists(join(frontendDir, "docs", "skills", "frontend", "knowledge", "rsc-boundary.md")));
+            assert.ok(await exists(join(frontendDir, "docs", "skills", "frontend", "knowledge", "hydration.md")));
+            assert.ok(await exists(join(frontendDir, "docs", "skills", "frontend", "knowledge", "architecture.md")));
+            assert.ok(await exists(join(frontendDir, "docs", "skills", "frontend", "knowledge", "performance.md")));
+            assert.ok(await exists(join(frontendDir, "docs", "skills", "frontend", "commands", "scaffold-architecture.md")));
+            assert.ok(await exists(join(frontendDir, "docs", "skills", "frontend", "commands", "audit-hydration.md")));
+            assert.ok(await exists(join(frontendDir, "docs", "skills", "frontend", "commands", "optimize-vitals.md")));
+            assert.ok(await exists(join(frontendDir, "docs", "skills", "frontend", "commands", "audit-accessibility.md")));
+        } finally {
+            await rm(frontendDir, { recursive: true, force: true });
+        }
+    });
 });
