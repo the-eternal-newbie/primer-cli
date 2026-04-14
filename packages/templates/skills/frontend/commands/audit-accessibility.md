@@ -20,9 +20,9 @@ components and propagate to the entire application.
 ```typescript
    // src/app/axe-provider.tsx
    'use client'
-   import { useEffect } from 'react';
+   import { useEffect, type ReactNode } from 'react';
 
-   export function AxeProvider({ children }: { children: React.ReactNode }) {
+   export function AxeProvider({ children }: { children: ReactNode }) {
      useEffect(() => {
        if (process.env.NODE_ENV !== 'production') {
          (async () => {
@@ -37,24 +37,38 @@ components and propagate to the entire application.
      return <>{children}</>;
    }
 
-   // src/app/layout.tsx — wrap with AxeProvider in development only
+   // src/app/layout.tsx
    import { AxeProvider } from './axe-provider';
 
-   export default function RootLayout({ children }) {
+   export default function RootLayout({
+     children,
+   }: {
+     children: React.ReactNode;
+   }) {
      return (
-       
-         
-           {children}
-         
-       
+       <html lang="en">
+         <body>
+           {process.env.NODE_ENV !== 'production' ? (
+             <AxeProvider>{children}</AxeProvider>
+           ) : (
+             children
+           )}
+         </body>
+       </html>
      );
    }
 ```
 
 2. Run automated scan and triage violations:
+   If Playwright is not yet installed:
+```bash
+   pnpm add -D @playwright/test
+   pnpm exec playwright install chromium
+```
+
 ```bash
    # Playwright accessibility audit
-   pnpm add -D @axe-core/react @axe-core/playwright
+   pnpm exec playwright test tests/a11y/
 ```
 
 ```typescript
@@ -150,9 +164,9 @@ components and propagate to the entire application.
 
 7. Audit touch target sizes:
 ```bash
-   # Find small interactive elements
+   # Find small interactive elements (matches class names without trailing space)
    grep -rn "className" src --include="*.tsx" \
-     | grep -E "w-[1-5] |h-[1-5] |p-0 |p-1 "
+     | grep -E '"[^"]*\b(w-[1-5]|h-[1-5]|p-0|p-1)\b'
 ```
 
    Minimum sizes:
