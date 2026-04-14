@@ -1,17 +1,17 @@
 {
     "name": "@monomit/primer-templates",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "private": false,
     "type": "module",
     "files": [
-      "index.js",
-      "cli-tool",
-      "prompts"
+        "index.js",
+        "cli-tool",
+        "prompts"
     ],
     "exports": {
-      ".": "./index.js"
+        ".": "./index.js"
     },
     "scripts": {
-      "clean": "rm -rf dist"
+        "clean": "rm -rf dist"
     }
-  }
+}
