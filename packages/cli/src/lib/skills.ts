@@ -6,7 +6,16 @@ import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 
 export const AVAILABLE_SKILLS = [
-  { value: "database", label: "Database", hint: "Schema design, migrations, performance, security" },
+  {
+    value: "database",
+    label: "Database",
+    hint: "Schema design, migrations, performance, security",
+  },
+  {
+    value: "auth",
+    label: "Auth",
+    hint: "Authentication, authorization, secrets management, incident response",
+  },
 ] as const;
 
 export type SkillName = typeof AVAILABLE_SKILLS[number]["value"];
@@ -43,7 +52,6 @@ export async function installSkills(
   for (const skill of skills) {
     const src = join(skillsRoot, skill);
 
-    // Validate source exists before attempting copy
     try {
       await access(src);
     } catch {
