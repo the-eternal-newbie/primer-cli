@@ -1,0 +1,59 @@
+---
+description: Non-negotiable testing engineering rules
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# Testing Rules
+
+These four rules apply to every testing operation regardless of
+deadline pressure. They are non-negotiable.
+
+## 1. Absolute Data Isolation
+
+- Every test must run against fresh, isolated data — never shared
+  database state between tests or test suites
+- Tests must clean up after themselves via transaction rollback,
+  database snapshots, or container teardown
+- Test execution order must never affect test outcomes — any test
+  must pass when run in isolation
+- Shared fixtures that accumulate state across tests are prohibited
+- Production databases must never be used for testing under
+  any circumstances
+
+## 2. No Static Pauses
+
+- Hardcoded sleep/wait calls (Thread.sleep, setTimeout with fixed
+  duration, cy.wait(5000)) are strictly prohibited in all test code
+- All timing dependencies must use dynamic waiting mechanisms:
+  - Playwright: page.waitForSelector, page.waitForResponse,
+    expect(locator).toBeVisible()
+  - Vitest: vi.waitFor(), vi.waitUntil()
+  - Network: intercept and await specific requests, not fixed delays
+- If a test cannot be written without a fixed sleep, the application
+  code must be refactored to expose a testable state signal
+
+## 3. Quarantine Don't Ignore
+
+- A test identified as flaky must be quarantined immediately using
+  it.skip or a dedicated quarantine wrapper — never left in the
+  active suite where it blocks CI
+- Quarantined tests must be tracked in a dedicated issue with:
+  - Root cause hypothesis
+  - Assigned owner
+  - Remediation deadline (maximum 2 weeks)
+- A test quarantined for more than 2 weeks without remediation
+  is deleted and rewritten from scratch
+- Blind reruns (retry: 3 in CI config) without root cause analysis
+  are prohibited — they mask systemic failures
+
+## 4. Strict Pipeline Speed Limits
+
+- The critical feedback path (unit + integration tests) must
+  complete within 5 minutes
+- The full pipeline (including E2E) must complete within 10 minutes
+- Suites exceeding these limits must be parallelized across runners
+  using matrix strategies or test sharding
+- E2E tests must be restricted to the 10-15 most critical user
+  journeys — comprehensive UI coverage belongs in component tests
+- Mutation tests run on a nightly schedule, not on every PR

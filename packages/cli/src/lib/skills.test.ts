@@ -134,4 +134,24 @@ describe("installSkills", () => {
             await rm(frontendDir, { recursive: true, force: true });
         }
     });
+
+    it("copies testing skill files into docs/skills/testing/", async () => {
+        const testingDir = await mkdtemp(join(tmpdir(), "primer-testing-skills-test-"));
+        try {
+            await installSkills(testingDir, ["testing"]);
+
+            assert.ok(await exists(join(testingDir, "docs", "skills", "testing", "README.md")));
+            assert.ok(await exists(join(testingDir, "docs", "skills", "testing", "rules", "testing.mdc")));
+            assert.ok(await exists(join(testingDir, "docs", "skills", "testing", "knowledge", "ai-code-failures.md")));
+            assert.ok(await exists(join(testingDir, "docs", "skills", "testing", "knowledge", "test-strategy.md")));
+            assert.ok(await exists(join(testingDir, "docs", "skills", "testing", "knowledge", "mutation-testing.md")));
+            assert.ok(await exists(join(testingDir, "docs", "skills", "testing", "knowledge", "contract-testing.md")));
+            assert.ok(await exists(join(testingDir, "docs", "skills", "testing", "commands", "seed-test-data.md")));
+            assert.ok(await exists(join(testingDir, "docs", "skills", "testing", "commands", "generate-mutations.md")));
+            assert.ok(await exists(join(testingDir, "docs", "skills", "testing", "commands", "heal-test.md")));
+            assert.ok(await exists(join(testingDir, "docs", "skills", "testing", "commands", "diagnose-flakiness.md")));
+        } finally {
+            await rm(testingDir, { recursive: true, force: true });
+        }
+    });
 });
