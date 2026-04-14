@@ -77,22 +77,62 @@ export class IdempotencyInterceptor implements NestInterceptor {
 **FastAPI implementation:**
 
 ```python
-from fastapi import Header, HTTPException
-import redis.asyncio as redis
+from fastapi import Header, Request, Response
+from fastapi.responses import JSONResponse
+import json
 
-async def idempotency_check(
-    idempotency_key: str = Header(None),
-    redis_client: redis.Redis = Depends(get_redis)
+async def idempotency_middleware(
+    request: Request,
+    call_next,
+    redis_client: redis.Redis,
 ):
-    if not idempotency_key:
-        return None
+    idempotency_key = request.headers.get("idempotency-key")
+
+    if not idempotency_key or request.method not in ("POST", "PUT", "PATCH"):
+        return await call_next(request)
 
     cached = await redis_client.get(f"idempotency:{idempotency_key}")
     if cached:
-        raise HTTPException(status_code=200, detail=json.loads(cached))
+        # Return the cached success response directly — not an exception
+        data = json.loads(cached)
+        return JSONResponse(
+            content=data["body"],
+            status_code=data["status_code"],
+            headers={"X-Idempotent-Replayed": "true"},
+        )
 
-    return idempotency_key
+    response = await call_next(request)
+
+    if response.status_code < 300:
+        # Read and cache the response body
+        body = b""
+        async for chunk in response.body_iterator:
+            body += chunk
+
+        await redis_client.setex(
+            f"idempotency:{idempotency_key}",
+            86400,
+            json.dumps({
+                "status_code": response.status_code,
+                "body": json.loads(body),
+            }),
+        )
+
+        return Response(
+            content=body,
+            status_code=response.status_code,
+            headers=dict(response.headers),
+            media_type=response.media_type,
+        )
+
+    return response
 ```
+
+**Why not HTTPException for cached responses:** `HTTPException` in FastAPI
+is for error handling and serializes into the framework's error envelope.
+Returning a cached success response via `HTTPException(status_code=200)`
+produces the wrong response shape and diverges from the declared response
+model. Always return cached responses through the normal response path.
 
 ---
 

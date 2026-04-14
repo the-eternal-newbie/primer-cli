@@ -17,49 +17,19 @@ idempotency key pattern.
    - What does it depend on from other services?
    - What does it expose to other services or clients?
 
-2. Define the API surface before writing any implementation:
-```yaml
-   # openapi.yaml — written first, implementation follows
-   openapi: 3.1.0
-   info:
-     title: <ServiceName> API
-     version: 1.0.0
-   paths:
-     /v1/<resources>:
-       get:
-         summary: List <resources>
-         parameters:
-           - name: cursor
-             in: query
-             schema: { type: string }
-         responses:
-           '200':
-             content:
-               application/json:
-                 schema:
-                   $ref: '#/components/schemas/<Resource>ListResponse'
-       post:
-         summary: Create <resource>
-         parameters:
-           - name: Idempotency-Key
-             in: header
-             required: true
-             schema: { type: string, format: uuid }
-         requestBody:
-           required: true
-           content:
-             application/json:
-               schema:
-                 $ref: '#/components/schemas/Create<Resource>Request'
-         responses:
-           '201':
-             content:
-               application/json:
-                 schema:
-                   $ref: '#/components/schemas/<Resource>Response'
-           '422':
-             description: Validation error
-```
+2. Design the API surface before writing any implementation code.
+   Use schema-first thinking to define endpoints, request/response
+   shapes, and error contracts. For teams that want a design artifact,
+   sketch the surface in a temporary document or whiteboard — but the
+   authoritative OpenAPI spec is always generated from code, never
+   hand-authored.
+
+   Questions to answer before writing code:
+   - What resources does this service expose?
+   - What HTTP methods and status codes does each endpoint use?
+   - What are the required and optional fields per operation?
+   - What error shapes does each endpoint return?
+   - Which endpoints require idempotency keys?
 
 3. Generate the service scaffold for the target stack:
 
@@ -109,7 +79,24 @@ idempotency key pattern.
    curl http://localhost:8000/openapi.json | jq .
 ```
 
-7. Commit the OpenAPI spec to version control before the implementation.
+7. Export the generated spec and commit it as a baseline artifact
+   for contract diffing in CI — this is a generated snapshot, not
+   a hand-authored source of truth:
+
+```bash
+   # NestJS: export generated spec
+   curl http://localhost:3000/api-json > openapi.json
+
+   # FastAPI: export generated spec
+   curl http://localhost:8000/openapi.json > openapi.json
+
+   # Commit as a generated artifact — update on every release
+   git add openapi.json
+   git commit -m "chore: update OpenAPI baseline snapshot"
+  ```
+
+   The spec in version control is a snapshot for diffing only.
+   The running service is always the authoritative source.
 
 ## Do not
 
