@@ -1,0 +1,81 @@
+---
+description: Non-negotiable authentication and authorization engineering rules
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# Auth Rules
+
+These five rules apply to every authentication and authorization
+operation regardless of stack, scale, or deadline pressure.
+They are non-negotiable.
+
+## 1. Never Roll Custom Crypto
+
+- Never implement custom cryptography, hashing, or random number
+  generation algorithms
+- Use Argon2id for password hashing — bcrypt is acceptable as a
+  legacy fallback, MD5 and SHA-1 are prohibited for passwords
+- Use AES-256-GCM for symmetric encryption with a random IV per value
+- Use RS256 or ES256 for JWT signing — never HS256 in distributed
+  systems, never `alg: none` under any circumstances
+- Use `crypto.randomBytes(32)` for token generation — never
+  `Math.random()` for security-sensitive values
+- Rely exclusively on established, audited libraries (jose, bcrypt,
+  argon2, libsodium) — never reimplement their logic
+
+## 2. Absolute Secret Hygiene
+
+- Credentials must never appear in source code, commit history,
+  logs, error messages, or client-side bundles
+- Secrets must be stored in a dedicated secrets manager
+  (AWS Secrets Manager, HashiCorp Vault, GCP Secret Manager)
+  and injected at runtime — never in plaintext environment files
+  committed to version control
+- API keys and client secrets must be rotated on a defined schedule
+  (maximum 90 days) and immediately upon suspected compromise
+- Each service must have its own dedicated credentials —
+  no shared service accounts or API keys across services
+- All secret access must be logged with caller identity and timestamp
+
+## 3. Secure Token Storage
+
+- Authentication tokens must never be stored in localStorage,
+  sessionStorage, or any JavaScript-accessible browser storage
+- Tokens must be stored exclusively in HttpOnly, Secure,
+  SameSite=Strict cookies set by the server
+- Refresh tokens must never be transmitted to or stored by
+  client-side JavaScript
+- Token expiry must be enforced server-side — client-side expiry
+  checks are display hints only
+- Sessions must be invalidated server-side on logout — deleting
+  the cookie client-side is insufficient
+
+## 4. Server-Side Default Deny
+
+- Every API endpoint and server action defaults to DENY unless
+  explicitly authorized
+- Client-side authorization checks (hidden buttons, disabled links,
+  conditional rendering) are display conveniences only — they are
+  never the enforcement mechanism
+- Every request that accesses a specific resource instance must
+  verify authorization for that exact instance, not just for the
+  resource type (prevents IDOR)
+- Authorization checks must occur as early as possible in the
+  request lifecycle — never after data has been fetched
+- Never trust user-supplied role or permission claims in request
+  headers, query parameters, or body fields
+
+## 5. Decoupled Authorization
+
+- Authorization logic must not be embedded in UI components,
+  route handlers, or business logic functions
+- All access decisions must flow through a single, centralized
+  policy enforcement point
+- Policy changes must be deployable independently of application
+  code deployments
+- A UI change must never be sufficient to grant or revoke access
+  to a backend resource
+- Authorization policies must be version-controlled, reviewed
+  via pull request, and tested with explicit allow/deny cases
+  before deployment

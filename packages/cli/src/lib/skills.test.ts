@@ -56,4 +56,39 @@ describe("installSkills", () => {
             /not found/
         );
     });
+
+    it("copies auth skill files into docs/skills/auth/", async () => {
+        const authDir = await mkdtemp(join(tmpdir(), "primer-auth-skills-test-"));
+        try {
+            await installSkills(authDir, ["auth"]);
+
+            assert.ok(await exists(join(authDir, "docs", "skills", "auth", "README.md")));
+            assert.ok(await exists(join(authDir, "docs", "skills", "auth", "rules", "auth.mdc")));
+            assert.ok(await exists(join(authDir, "docs", "skills", "auth", "knowledge", "attack-vectors.md")));
+            assert.ok(await exists(join(authDir, "docs", "skills", "auth", "knowledge", "authorization-models.md")));
+            assert.ok(await exists(join(authDir, "docs", "skills", "auth", "knowledge", "authorization-decoupling.md")));
+            assert.ok(await exists(join(authDir, "docs", "skills", "auth", "knowledge", "machine-identity.md")));
+            assert.ok(await exists(join(authDir, "docs", "skills", "auth", "knowledge", "frontend-security.md")));
+            assert.ok(await exists(join(authDir, "docs", "skills", "auth", "commands", "setup-auth-provider.md")));
+            assert.ok(await exists(join(authDir, "docs", "skills", "auth", "commands", "configure-access-policy.md")));
+            assert.ok(await exists(join(authDir, "docs", "skills", "auth", "commands", "rotate-secrets.md")));
+            assert.ok(await exists(join(authDir, "docs", "skills", "auth", "commands", "audit-dependencies.md")));
+            assert.ok(await exists(join(authDir, "docs", "skills", "auth", "commands", "audit-access-control.md")));
+            assert.ok(await exists(join(authDir, "docs", "skills", "auth", "commands", "revoke-sessions.md")));
+            assert.ok(await exists(join(authDir, "docs", "skills", "auth", "commands", "lockdown-auth.md")));
+        } finally {
+            await rm(authDir, { recursive: true, force: true });
+        }
+    });
+
+    it("copies both database and auth skills together", async () => {
+        const bothDir = await mkdtemp(join(tmpdir(), "primer-both-skills-test-"));
+        try {
+            await installSkills(bothDir, ["database", "auth"]);
+            assert.ok(await exists(join(bothDir, "docs", "skills", "database", "README.md")));
+            assert.ok(await exists(join(bothDir, "docs", "skills", "auth", "README.md")));
+        } finally {
+            await rm(bothDir, { recursive: true, force: true });
+        }
+    });
 });
