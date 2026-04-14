@@ -91,4 +91,27 @@ describe("installSkills", () => {
             await rm(bothDir, { recursive: true, force: true });
         }
     });
+
+    it("copies backend skill files into docs/skills/backend/", async () => {
+        const backendDir = await mkdtemp(join(tmpdir(), "primer-backend-skills-test-"));
+        try {
+            await installSkills(backendDir, ["backend"]);
+
+            assert.ok(await exists(join(backendDir, "docs", "skills", "backend", "README.md")));
+            assert.ok(await exists(join(backendDir, "docs", "skills", "backend", "rules", "backend.mdc")));
+            assert.ok(await exists(join(backendDir, "docs", "skills", "backend", "knowledge", "idempotency.md")));
+            assert.ok(await exists(join(backendDir, "docs", "skills", "backend", "knowledge", "traffic-control.md")));
+            assert.ok(await exists(join(backendDir, "docs", "skills", "backend", "knowledge", "distributed-resilience.md")));
+            assert.ok(await exists(join(backendDir, "docs", "skills", "backend", "knowledge", "api-contracts.md")));
+            assert.ok(await exists(join(backendDir, "docs", "skills", "backend", "knowledge", "agentic-backends.md")));
+            assert.ok(await exists(join(backendDir, "docs", "skills", "backend", "commands", "scaffold-service.md")));
+            assert.ok(await exists(join(backendDir, "docs", "skills", "backend", "commands", "setup-observability.md")));
+            assert.ok(await exists(join(backendDir, "docs", "skills", "backend", "commands", "validate-contract.md")));
+            assert.ok(await exists(join(backendDir, "docs", "skills", "backend", "commands", "generate-e2e-tests.md")));
+            assert.ok(await exists(join(backendDir, "docs", "skills", "backend", "commands", "diagnose-incident.md")));
+            assert.ok(await exists(join(backendDir, "docs", "skills", "backend", "commands", "draft-postmortem.md")));
+        } finally {
+            await rm(backendDir, { recursive: true, force: true });
+        }
+    });
 });
