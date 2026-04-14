@@ -84,13 +84,12 @@ Content-Security-Policy:
 ```typescript
 // middleware.ts
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
 
 export function middleware(request: Request) {
-  // Use Web Crypto API — compatible with both Edge and Node.js runtimes
+  // Use the global Web Crypto API and Edge-safe base64 encoding
   const array = new Uint8Array(16);
-  crypto.getRandomValues(array);
-  const nonce = Buffer.from(array).toString('base64');
+  globalThis.crypto.getRandomValues(array);
+  const nonce = btoa(String.fromCharCode(...array));
   const cspHeader = `
     default-src 'none';
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
