@@ -120,17 +120,26 @@ async function enqueueWork(task: Task): Promise<void> {
 
 **Streaming backpressure (Node.js):**
 ```typescript
-// Use highWaterMark to control buffer size
-const readable = new Readable({
-  highWaterMark: 16 * 1024, // 16KB buffer
-  read() {},
-});
+// Use pipe() — handles pause/resume automatically
+// pipe() pauses the readable when the writable buffer is full
+// and resumes when the writable drains
+readable.pipe(writable);
 
-// Check if consumer is ready before pushing
-if (!readable.push(chunk)) {
-  // Consumer is slow — pause the source
-  source.pause();
-  readable.once('drain', () => source.resume());
+// Or manage manually using the writable's drain event
+function writeWithBackpressure(
+  writable: Writable,
+  chunk: Buffer,
+  source: Readable
+): void {
+  const canContinue = writable.write(chunk);
+
+  if (!canContinue) {
+    // Writable buffer is full — pause the source
+    source.pause();
+
+    // Resume when the writable buffer drains
+    writable.once('drain', () => source.resume());
+  }
 }
 ```
 
