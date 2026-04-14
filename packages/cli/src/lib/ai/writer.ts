@@ -44,7 +44,7 @@ ${ruleList}
 - Read \`AGENTS.md\` before starting any task
 - Read \`docs/CANONICAL_ARCHITECTURE.md\` before generating code
 - Read \`docs/CANONICAL_PATTERNS.md\` before generating code
-- Never commit directly to \`master\`
+- Never commit directly to the default branch
 - Stop and confirm with the human before any destructive operation
 - End every work phase with an explicit file list and a STOP marker
 `;
