@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 // Suppress Node.js experimental fetch warning — fetch is stable enough for our use
 process.removeAllListeners("warning");
 process.on("warning", (warning) => {
@@ -7,7 +8,6 @@ process.on("warning", (warning) => {
 });
 
 
-/* eslint-disable no-console */
 import { parseArgs } from "node:util";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";

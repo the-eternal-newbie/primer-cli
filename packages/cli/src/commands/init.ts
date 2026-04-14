@@ -3,11 +3,13 @@ import { join } from "node:path";
 import { existsSync } from "node:fs";
 import { loadConfig } from "../lib/config.ts";
 import { getTemplatesRoot } from "../lib/resolve.ts";
+import { installSkills, AVAILABLE_SKILLS } from "../lib/skills.ts";
 import {
   scaffoldDir,
   resolvePackageManagerVersion,
   resolvePackageManagerRun,
 } from "../lib/scaffold.ts";
+import type { SkillName } from "../lib/skills.ts";
 import type { ScaffoldContext, AiTool, PackageManager } from "../lib/scaffold.ts";
 import {
   PROVIDERS,
@@ -60,6 +62,13 @@ export async function runInit(): Promise<void> {
             { value: "claude-code", label: "Claude Code" },
           ],
           required: true,
+        }),
+
+      skills: () =>
+        p.multiselect({
+          message: "Which domain skill packages to include?",
+          options: [...AVAILABLE_SKILLS],
+          required: false,
         }),
 
       initGit: () =>
@@ -195,6 +204,21 @@ export async function runInit(): Promise<void> {
     process.exit(1);
   }
 
+  // --- Install skills ---
+  // After scaffoldDir call, before AI generation
+  const skills = (base.skills ?? []) as SkillName[];
+  if (skills.length > 0) {
+    const ss = p.spinner();
+    ss.start("Installing skill packages");
+    try {
+      await installSkills(outputDir, skills);
+      ss.stop(`Installed ${skills.length} skill package${skills.length > 1 ? "s" : ""}`);
+    } catch (err) {
+      ss.stop("Skill installation failed");
+      p.log.warn(String(err));
+    }
+  }
+
   // --- AI agent generation ---
   if (!OFFLINE_FLAG && aiProvider && techStack) {
     const provider = PROVIDERS[aiProvider];
@@ -221,6 +245,7 @@ export async function runInit(): Promise<void> {
             constraints: projectConstraints,
             packageManager: pm,
             stack: techStack,
+            skills,
           },
           config.ai
         );

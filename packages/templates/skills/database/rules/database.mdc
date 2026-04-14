@@ -1,0 +1,76 @@
+---
+description: Non-negotiable database engineering rules
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# Database Rules
+
+These seven rules apply to every database operation regardless of
+stack, scale, or deadline pressure. They are non-negotiable.
+
+## 1. Absolute Segregation of Production Environments
+
+- Production credentials must never appear in development or staging
+  configurations, code, or logs
+- Migrations must be tested in staging before production execution
+- No developer has direct write access to production databases;
+  all mutations go through application code or reviewed scripts
+- Emergency production access requires explicit approval and is logged
+
+## 2. Immutability of Schema Migrations
+
+- A migration file applied to any environment must never be modified
+- Errors in applied migrations are corrected by new migrations only
+- Migration files are committed to version control before execution
+- Migration history must be preserved indefinitely — never truncate
+  the migrations table
+
+## 3. Safety by Design and Zero-Downtime Enforcement
+
+- Every migration must be backward-compatible with the previous
+  deployed application version for at least one full deployment cycle
+- The expand/contract pattern is mandatory for all breaking changes
+- Indexes on tables with more than 100,000 rows must use CONCURRENTLY
+- No DDL operation that acquires ACCESS EXCLUSIVE lock may run during
+  peak traffic hours without explicit human approval
+
+## 4. Mandatory Transactional Integrity
+
+- Multi-step data operations always execute inside explicit transactions
+- Transactions must define explicit rollback conditions before execution
+- No transaction may span an external API call or network operation
+- Long-running transactions must be broken into bounded batches with
+  checkpointing to prevent lock accumulation
+
+## 5. Continuous Backup Validation and Checkpointing
+
+- Backups are only considered valid after a successful restore test
+- Restore procedures must be documented and tested quarterly
+- Point-in-time recovery (PITR) must be enabled for all production
+  databases containing business-critical data
+- Backup retention period must meet or exceed the regulatory
+  requirement for the data classification of the stored data
+
+## 6. Principle of Least Privilege and Non-Human Identity
+
+- Every service connects with a dedicated database role scoped to
+  the minimum required permissions for that service only
+- No service role may have CREATE, DROP, or ALTER privileges in
+  production unless explicitly justified and documented
+- Human accounts must never be used for application connections
+- Credentials must be rotated on a defined schedule and immediately
+  upon team member departure
+- Connection strings must never appear in source code, logs, or
+  error messages
+
+## 7. Never Delete Raw Data
+
+- Hard deletes on business entities are prohibited without documented
+  retention policy approval
+- Soft deletes (deleted_at timestamp) are the default for all
+  business entities
+- Financial transaction records are immutable — corrections are
+  made by compensating transactions, never by modification or deletion
+- Data past its retention period is anonymized, not deleted, to
+  preserve audit trail integrity
