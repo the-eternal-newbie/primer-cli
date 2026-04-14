@@ -206,6 +206,7 @@ export async function runInit(): Promise<void> {
 
   // --- Install skills ---
   const skills = (base.skills ?? []) as SkillName[];
+  let installedSkills: SkillName[] = skills;
   if (skills.length > 0) {
     const ss = p.spinner();
     ss.start("Installing skill packages");
@@ -213,11 +214,12 @@ export async function runInit(): Promise<void> {
       await installSkills(outputDir, skills);
       ss.stop(`Installed ${skills.length} skill package${skills.length > 1 ? "s" : ""}`);
     } catch (err) {
+      installedSkills = [];
       ss.stop("Skill installation failed");
       p.log.error(String(err));
       p.log.warn(
         "The project was scaffolded but skill files are missing. " +
-        "Agent docs will reference files that do not exist. " +
+        "AI agent generation will skip skill references so docs do not point to missing files. " +
         "Run primer again or add skill files manually."
       );
       // Don't exit — the rest of the project is still valid
@@ -250,7 +252,7 @@ export async function runInit(): Promise<void> {
             constraints: projectConstraints,
             packageManager: pm,
             stack: techStack,
-            skills,
+            skills: installedSkills,
           },
           config.ai
         );
