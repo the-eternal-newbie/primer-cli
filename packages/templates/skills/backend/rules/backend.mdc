@@ -1,0 +1,65 @@
+---
+description: Non-negotiable backend engineering rules
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# Backend Rules
+
+These five rules apply to every backend service operation regardless
+of stack, scale, or deadline pressure. They are non-negotiable.
+
+## 1. Idempotent Write Operations
+
+- Every state-mutating endpoint must accept and process idempotency keys
+- Idempotency keys must be stored with a TTL exceeding the client's
+  maximum retry window (minimum 24 hours for financial operations)
+- Retry logic must never be implemented without idempotency guarantees
+- Duplicate requests detected via idempotency key must return the
+  original response, not an error
+
+## 2. Strict Retry Policies
+
+- All outbound service calls must use exponential backoff with jitter —
+  linear or fixed-interval retries are prohibited
+- Maximum retry attempt counts must be explicitly defined —
+  unbounded retries are prohibited
+- Only retryable errors (429, 503, 504, network timeouts) are retried —
+  client errors (4xx except 429) must never be retried
+- Every network call must have an explicit timeout —
+  a missing timeout is a bug, not an omission
+
+## 3. OpenAPI as Source of Truth
+
+- The OpenAPI specification must be generated from code, never
+  hand-authored — hand-written specs drift from implementation
+- Breaking API changes without a version increment are blocked in CI
+  via automated contract linting
+- Deprecated endpoints must serve Deprecation and Sunset headers
+  for a minimum of 6 months before removal
+- Consumer-driven contract tests must pass before any API change
+  is merged to the default branch
+
+## 4. Graceful Degradation
+
+- Services under extreme load must shed non-critical traffic (P3/P4)
+  before impacting core business operations (P0/P1)
+- Every external dependency call must have a defined fallback behavior
+  for circuit-open state — returning an error is acceptable,
+  returning stale data is acceptable, silently hanging is not
+- Health check endpoints must reflect actual service capability,
+  not just process liveness
+- Load shedding decisions must be logged with the reason and
+  the traffic classification that was shed
+
+## 5. Isolated Agent Execution
+
+- AI agents must only execute actions within isolated, short-lived
+  environments (containers, VMs, or WASM sandboxes)
+- The execution layer and policy layer must never be merged —
+  policy decisions are made before execution begins and cannot
+  be influenced by the execution environment
+- Agent execution environments are destroyed after task completion
+  or timeout — no persistent state between agent executions
+- All agent execution events are logged with agent identity,
+  permitted actions, actual actions taken, and duration
