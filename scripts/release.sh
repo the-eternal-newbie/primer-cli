@@ -38,9 +38,9 @@ fi
 echo "Releasing v$VERSION..."
 
 # Bump versions in both packages only
-npm version "$VERSION" --no-git-tag-version \
+npm version "$VERSION" --no-git-tag-version --no-package-lock \
   --prefix packages/cli
-npm version "$VERSION" --no-git-tag-version \
+npm version "$VERSION" --no-git-tag-version --no-package-lock \
   --prefix packages/templates
 
 # Commit version bumps only — no lockfile, no dependency changes
