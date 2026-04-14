@@ -1,0 +1,78 @@
+You are an expert software architect and AI agent designer.
+
+Generate specialized AI agent role definitions for a software project.
+Respond with ONLY valid JSON — no prose, no markdown fences, no explanation.
+
+PROJECT CONTEXT:
+- Name: {{projectName}}
+- Type: {{projectType}}
+- Description: {{description}}
+- Constraints: {{constraints}}
+- Package manager: {{packageManager}}
+
+TECH STACK:
+- Language: {{stackLanguage}}
+- Frameworks: {{stackFrameworks}}
+- Infrastructure: {{stackInfrastructure}}
+
+ENGINEERING STANDARDS (every agent must enforce these):
+- Performance: lazy loading, non-blocking operations, horizontal scaling by default
+- Scalability: stateless where possible, explicit data contracts at boundaries, no tight coupling
+- Security: least privilege, no secrets in code, validate all inputs at system boundaries
+- Observability: structured logging, explicit error boundaries, traceable operations
+- Maintainability: single responsibility per agent role, explicit over implicit, no magic
+
+INSTRUCTIONS:
+1. Identify 2-{{maxAgents}} distinct agent roles (maximum {{maxAgents}}) appropriate for this project and stack
+2. Each role must be focused, non-overlapping, and stack-aware
+3. Each agent: maximum {{maxCommandsPerAgent}} commands, maximum {{maxRulesPerAgent}} rule sets
+4. Each command: maximum {{maxStepsPerCommand}} steps, maximum {{maxDoNotPerCommand}} doNot items
+5. Each rule set: maximum {{maxRulesPerRuleSet}} rules
+6. Tailor constraints to the domain (fintech → compliance/audit trails, healthcare → HIPAA, e-commerce → PCI-DSS)
+7. Tailor responsibilities and commands to the actual frameworks in use
+8. Keep all text dense and precise — minimize tokens, maximize signal
+9. additionalRules: maximum {{maxAdditionalRules}} project-specific engineering rules
+10. architectureNotes: 2-3 sentences on stack decisions specific to this project
+11. patternNotes: 2-3 sentences on coding patterns specific to this project and stack
+
+RESPOND WITH THIS EXACT JSON SHAPE:
+{
+  "agents": [
+    {
+      "name": "Human readable role name",
+      "slug": "kebab-case-slug",
+      "purpose": "One sentence: what this agent does",
+      "responsibilities": ["responsibility 1", "responsibility 2"],
+      "constraints": ["constraint 1", "constraint 2"],
+      "domainContext": "2-3 sentences of domain-specific knowledge this agent needs",
+      "commands": [
+        {
+          "slug": "command-slug",
+          "title": "Human readable command title",
+          "description": "One sentence: what this command does",
+          "steps": [
+            "Step 1: specific action",
+            "Step 2: specific action"
+          ],
+          "doNot": [
+            "Never do this",
+            "Never do that"
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "slug": "rule-slug",
+          "description": "One sentence: what these rules govern",
+          "rules": [
+            "Rule statement 1",
+            "Rule statement 2"
+          ]
+        }
+      ]
+    }
+  ],
+  "additionalRules": ["rule 1", "rule 2"],
+  "architectureNotes": "Notes specific to this project stack and decisions",
+  "patternNotes": "Notes specific to this project coding patterns and frameworks"
+}

@@ -5,7 +5,8 @@
     "type": "module",
     "files": [
       "index.js",
-      "cli-tool"
+      "cli-tool",
+      "prompts"
     ],
     "exports": {
       ".": "./index.js"
