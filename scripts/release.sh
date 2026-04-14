@@ -37,26 +37,14 @@ fi
 
 echo "Releasing v$VERSION..."
 
-# Bump versions in both packages
+# Bump versions in both packages only
 npm version "$VERSION" --no-git-tag-version \
   --prefix packages/cli
 npm version "$VERSION" --no-git-tag-version \
   --prefix packages/templates
 
-# Pin templates dependency to exact version in cli package.json
-node -e "
-  const fs = require('fs');
-  const pkg = JSON.parse(fs.readFileSync('packages/cli/package.json', 'utf8'));
-  pkg.dependencies['@monomit/primer-templates'] = '$VERSION';
-  fs.writeFileSync('packages/cli/package.json', JSON.stringify(pkg, null, 2) + '\n');
-"
-
-# Regenerate lockfile using current registry state
-# Note: templates is not yet published — lockfile uses the workspace version
-pnpm install --lockfile-only --no-frozen-lockfile
-
-# Commit the version bump and updated lockfile
-git add packages/cli/package.json packages/templates/package.json pnpm-lock.yaml
+# Commit version bumps only — no lockfile, no dependency changes
+git add packages/cli/package.json packages/templates/package.json
 git commit -m "chore(primer): release v$VERSION"
 
 # Tag and push — GitHub Actions handles all publishing

@@ -18,6 +18,7 @@
     "turbo": "^2"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": ["esbuild"],
+    "autoInstallPeers": true
   }
 }
