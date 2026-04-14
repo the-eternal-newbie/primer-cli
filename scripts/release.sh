@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Usage: ./scripts/release.sh <version>
-# Example: ./scripts/release.sh 0.2.0
-
 VERSION=${1:-}
 
 if [ -z "$VERSION" ]; then
@@ -13,13 +10,11 @@ if [ -z "$VERSION" ]; then
   exit 1
 fi
 
-# Validate semver format
 if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
   echo "Error: version must be semver (e.g. 0.2.0)"
   exit 1
 fi
 
-# Confirm we're on master and clean
 BRANCH=$(git branch --show-current)
 if [ "$BRANCH" != "master" ]; then
   echo "Error: must be on master branch (currently on $BRANCH)"
@@ -31,7 +26,6 @@ if ! git diff --quiet || ! git diff --cached --quiet; then
   exit 1
 fi
 
-# Ensure local master is exactly up-to-date with origin/master
 git fetch origin master
 LOCAL_HEAD=$(git rev-parse HEAD)
 REMOTE_HEAD=$(git rev-parse origin/master)
@@ -57,25 +51,20 @@ node -e "
   fs.writeFileSync('packages/cli/package.json', JSON.stringify(pkg, null, 2) + '\n');
 "
 
-# Publish templates first so cli can resolve it during lockfile regeneration
-echo "Publishing @monomit/primer-templates@$VERSION..."
-cd packages/templates
-npm publish --access public
-cd ../..
-
-# Now regenerate lockfile — templates is live on registry so resolution works
-pnpm install --lockfile-only
+# Regenerate lockfile using current registry state
+# Note: templates is not yet published — lockfile uses the workspace version
+pnpm install --lockfile-only --no-frozen-lockfile
 
 # Commit the version bump and updated lockfile
 git add packages/cli/package.json packages/templates/package.json pnpm-lock.yaml
 git commit -m "chore(primer): release v$VERSION"
 
-# Create and push the tag — GitHub Actions publishes @monomit/primer
+# Tag and push — GitHub Actions handles all publishing
 git tag "v$VERSION"
 git push origin master
 git push origin "v$VERSION"
 
 echo ""
-echo "Done. @monomit/primer-templates@$VERSION published directly."
-echo "GitHub Actions will publish @monomit/primer@$VERSION on tag push."
+echo "Done. v$VERSION tagged and pushed."
+echo "GitHub Actions will publish both packages in sequence."
 echo "Monitor: https://github.com/$(git remote get-url origin | sed 's/.*github.com[:/]//' | sed 's/\.git$//')/actions"

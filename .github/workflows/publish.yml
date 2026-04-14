@@ -45,6 +45,22 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Wait for templates registry propagation
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "Waiting for @monomit/primer-templates@$VERSION to propagate..."
+          for i in $(seq 1 12); do
+            if npm view @monomit/primer-templates@$VERSION version 2>/dev/null; then
+              echo "Package is live."
+              exit 0
+            fi
+            echo "Attempt $i/12 — waiting 10s..."
+            sleep 10
+          done
+          echo "Error: package did not propagate within 2 minutes"
+          exit 1
+        working-directory: packages/templates
+
       - name: Publish @monomit/primer
         run: npm publish --access public
         working-directory: packages/cli
