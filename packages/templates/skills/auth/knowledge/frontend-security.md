@@ -44,7 +44,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     sessionToken: {
       options: {
         httpOnly: true,
-        sameSite: 'strict',
+        sameSite: 'lax',  // use 'strict' only when OAuth/OIDC redirects are not involved
         secure: process.env.NODE_ENV === 'production',
         path: '/',
       },
