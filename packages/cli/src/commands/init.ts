@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { existsSync } from "node:fs";
 import { loadConfig } from "../lib/config.ts";
 import { getTemplatesRoot } from "../lib/resolve.ts";
-import { installSkills, AVAILABLE_SKILLS } from "../lib/skills.ts";
+import { installSkills, writeSkillRules, AVAILABLE_SKILLS } from "../lib/skills.ts";
 import {
   scaffoldDir,
   resolvePackageManagerVersion,
@@ -181,6 +181,8 @@ export async function runInit(): Promise<void> {
     cursorEnabled: aiTools.includes("cursor"),
     claudeEnabled: aiTools.includes("claude-code"),
     initGit: base.initGit as boolean,
+    hasSkills: false,
+    installedSkillsList: [],
   };
 
   const outputDir = join(process.cwd(), context.projectName);
@@ -188,6 +190,38 @@ export async function runInit(): Promise<void> {
   if (existsSync(outputDir)) {
     p.cancel(`Directory "${context.projectName}" already exists.`);
     process.exit(1);
+  }
+
+  // --- Install skills ---
+  const skills = (base.skills ?? []) as SkillName[];
+  let installedSkills: SkillName[] = [];
+  if (skills.length > 0) {
+    const ss = p.spinner();
+    ss.start("Installing skill packages");
+    try {
+      await installSkills(outputDir, skills);
+      installedSkills = skills;
+  
+      // Update context with installed skills for template rendering
+      context.hasSkills = true;
+      context.installedSkillsList = installedSkills.map(slug => ({
+        slug,
+        name: AVAILABLE_SKILLS.find(s => s.value === slug)?.label ?? slug,
+      }));
+  
+      // Write thin cursor rules for each installed skill
+      await writeSkillRules(outputDir, installedSkills, context.cursorEnabled);
+  
+      ss.stop(`Installed ${skills.length} skill package${skills.length > 1 ? "s" : ""}`);
+    } catch (err) {
+      ss.stop("Skill installation failed");
+      p.log.error(String(err));
+      p.log.warn(
+        "The project was scaffolded but skill files are missing. " +
+        "Agent docs will not reference skill paths. " +
+        "Run primer again or add skill files manually."
+      );
+    }
   }
 
   // --- Scaffold static files ---
@@ -202,28 +236,6 @@ export async function runInit(): Promise<void> {
     s.stop("Scaffolding failed");
     p.cancel(String(err));
     process.exit(1);
-  }
-
-  // --- Install skills ---
-  const skills = (base.skills ?? []) as SkillName[];
-  let installedSkills: SkillName[] = skills;
-  if (skills.length > 0) {
-    const ss = p.spinner();
-    ss.start("Installing skill packages");
-    try {
-      await installSkills(outputDir, skills);
-      ss.stop(`Installed ${skills.length} skill package${skills.length > 1 ? "s" : ""}`);
-    } catch (err) {
-      installedSkills = [];
-      ss.stop("Skill installation failed");
-      p.log.error(String(err));
-      p.log.warn(
-        "The project was scaffolded but skill files are missing. " +
-        "AI agent generation will skip skill references so docs do not point to missing files. " +
-        "Run primer again or add skill files manually."
-      );
-      // Don't exit — the rest of the project is still valid
-    }
   }
 
   // --- AI agent generation ---

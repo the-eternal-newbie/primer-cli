@@ -2,6 +2,7 @@ import { readdir, copyFile, mkdir, access } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { createRequire } from "node:module";
+import { writeOutputFile } from "./scaffold.ts";
 
 const require = createRequire(import.meta.url);
 
@@ -78,5 +79,40 @@ export async function installSkills(
 
     const dest = join(outputDir, "docs", "skills", skill);
     await copyDir(src, dest);
+  }
+}
+
+export async function writeSkillRules(
+  outputDir: string,
+  skills: SkillName[],
+  cursorEnabled: boolean,
+): Promise<void> {
+  if (skills.length === 0 || !cursorEnabled) return;
+
+  for (const skill of skills) {
+    const skillMeta = AVAILABLE_SKILLS.find(s => s.value === skill);
+    if (!skillMeta) continue;
+
+    const content = `---
+description: ${skillMeta.label} skill rules and knowledge for this project
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# ${skillMeta.label} Skill
+
+This project has the ${skillMeta.label} skill package installed.
+
+Before working on ${skillMeta.label.toLowerCase()}-related tasks:
+
+1. Read \`docs/skills/${skill}/knowledge/\` — domain knowledge and patterns
+2. Use commands from \`docs/skills/${skill}/commands/\` — never invent procedures
+3. Follow the non-negotiables in \`docs/skills/${skill}/rules/${skill}.mdc\`
+`;
+
+    await writeOutputFile(
+      join(outputDir, ".cursor", "rules", `${skill}.mdc`),
+      content
+    );
   }
 }

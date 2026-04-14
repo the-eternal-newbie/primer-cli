@@ -15,13 +15,32 @@ These slash commands are available in `.claude/commands/`:
 
 Load a command by reading its file before invoking it.
 
+{{#hasSkills}}
+## Installed skill packages
+
+Read the relevant knowledge documents before working in each domain.
+Use the commands from each skill instead of inventing procedures.
+
+| Skill | Knowledge | Commands |
+|---|---|---|
+{{#installedSkillsList}}
+| {{name}} | `docs/skills/{{slug}}/knowledge/` | `docs/skills/{{slug}}/commands/` |
+{{/installedSkillsList}}
+
+{{/hasSkills}}
 ## Claude-specific conventions
 
 ### Before writing any code
 1. Read `AGENTS.md` fully
 2. Read `docs/CANONICAL_ARCHITECTURE.md`
 3. Read `docs/CANONICAL_PATTERNS.md`
+{{#hasSkills}}
+4. Read the knowledge docs for any installed skill relevant to your task
+5. Check existing files before creating new ones
+{{/hasSkills}}
+{{^hasSkills}}
 4. Check existing files before creating new ones
+{{/hasSkills}}
 
 ### Phase boundaries
 Every discrete unit of work must end with:
