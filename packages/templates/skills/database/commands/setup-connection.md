@@ -5,7 +5,7 @@ separation, and credential security.
 
 ## Before executing
 
-Read `docs/skills/database/knowledge/anti-patterns.md` section on least privilege.
+Read `docs/skills/database/rules/database.mdc` rule 6 on least privilege.
 Read `docs/skills/database/knowledge/performance.md` section on connection pool sizing.
 
 ## Steps
