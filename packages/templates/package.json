@@ -6,7 +6,8 @@
     "files": [
         "index.js",
         "cli-tool",
-        "prompts"
+        "prompts",
+        "skills"
     ],
     "exports": {
         ".": "./index.js"

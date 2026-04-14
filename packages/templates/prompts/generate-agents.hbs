@@ -22,6 +22,19 @@ ENGINEERING STANDARDS (every agent must enforce these):
 - Observability: structured logging, explicit error boundaries, traceable operations
 - Maintainability: single responsibility per agent role, explicit over implicit, no magic
 
+{{#hasSkills}}
+INSTALLED SKILL PACKAGES: {{skillsList}}
+
+For each agent whose domain overlaps with an installed skill package,
+add these exact strings to that agent's domainContext field,
+replacing <skill> with the actual skill name from the list above:
+1. "Read docs/skills/<skill>/knowledge/ before any task in this domain."
+2. "Use commands from docs/skills/<skill>/commands/ instead of inventing procedures."
+3. Do NOT duplicate knowledge from skill packages — reference the path and stop.
+
+Example for database skill: "Read docs/skills/database/knowledge/ before any task in this domain. Use commands from docs/skills/database/commands/ instead of inventing procedures."
+{{/hasSkills}}
+
 INSTRUCTIONS:
 1. Identify 2-{{maxAgents}} distinct agent roles (maximum {{maxAgents}}) appropriate for this project and stack
 2. Each role must be focused, non-overlapping, and stack-aware

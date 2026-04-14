@@ -5,6 +5,7 @@ import { createRequire } from "node:module";
 import Mustache from "mustache";
 import type { AIGenerationResult, TechStack } from "./types.ts";
 import type { PrimerAIConfig } from "../config.ts";
+import type { SkillName } from "../skills.ts";
 
 export interface ProjectContext {
   projectName: string;
@@ -13,6 +14,7 @@ export interface ProjectContext {
   constraints: string;
   packageManager: string;
   stack: TechStack;
+  skills: SkillName[];
 }
 
 async function loadPromptTemplate(): Promise<string> {
@@ -53,6 +55,8 @@ export async function buildPrompt(
     maxDoNotPerCommand: aiConfig.maxDoNotPerCommand,
     maxRulesPerRuleSet: aiConfig.maxRulesPerRuleSet,
     maxAdditionalRules: aiConfig.maxAdditionalRules,
+    hasSkills: ctx.skills.length > 0,
+    skillsList: ctx.skills.join(", "),
   });
 }
 
