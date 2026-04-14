@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 import { parseArgs } from "node:util";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -27,9 +28,35 @@ COMMANDS
 FLAGS
   --help      Show this help message
   --version   Show the current version
+  --offline   Skip AI agent generation (no API key required)
+
+CONFIGURATION
+  Create primer.config.json in your working directory to override defaults:
+
+  {
+    "ai": {
+      "maxTokens": 8192,
+      "maxAgents": 4,
+      "maxCommandsPerAgent": 3,
+      "maxRulesPerAgent": 2,
+      "maxStepsPerCommand": 5,
+      "maxDoNotPerCommand": 3,
+      "maxRulesPerRuleSet": 5,
+      "maxAdditionalRules": 5
+    }
+  }
+
+ENVIRONMENT VARIABLES
+  ANTHROPIC_API_KEY    API key for Claude (Anthropic)
+  ANTHROPIC_MODEL      Override Claude model (default: claude-sonnet-4-5)
+  OPENAI_API_KEY       API key for ChatGPT (OpenAI)
+  OPENAI_MODEL         Override OpenAI model (default: gpt-4o)
+  GEMINI_API_KEY       API key for Gemini (Google)
+  GEMINI_MODEL         Override Gemini model (default: gemini-2.0-flash)
 
 EXAMPLES
   primer init
+  primer init --offline
   primer --version
 `);
 }
@@ -39,6 +66,7 @@ const { values, positionals } = parseArgs({
   options: {
     help: { type: "boolean", short: "h" },
     version: { type: "boolean", short: "v" },
+    offline: { type: "boolean" },
   },
   allowPositionals: true,
   strict: false,
@@ -57,12 +85,7 @@ if (values.version) {
 const command = positionals[0];
 
 if (!command || command === "init") {
-  try {
-    await runInit();
-  } catch (error) {
-    console.error(error);
-    process.exit(1);
-  }
+  runInit();
 } else {
   console.error(`Unknown command: ${command}`);
   console.error(`Run "primer --help" for usage.`);
