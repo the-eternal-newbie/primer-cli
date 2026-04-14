@@ -26,7 +26,9 @@ Read `docs/skills/auth/knowledge/authorization-decoupling.md` in full.
 
    # Start Cerbos sidecar (Docker)
    docker run --rm -v ./policies:/policies \
-     ghcr.io/cerbos/cerbos:latest
+     ghcr.io/cerbos/cerbos:0.35.0
+   # Pin to a specific version — check https://github.com/cerbos/cerbos/releases
+   # Update on a quarterly cadence or when security patches are released
 ```
 
 3. Define the resource policy in version-controlled YAML:

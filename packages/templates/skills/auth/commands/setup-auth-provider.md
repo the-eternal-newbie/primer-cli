@@ -53,8 +53,13 @@ secure token storage and cookie configuration.
      session: { strategy: 'jwt', maxAge: 3600 },
      cookies: {
        sessionToken: {
-         options: { httpOnly: true, secure: true, sameSite: 'strict' }
-       }
+         options: {
+           httpOnly: true,
+           secure: process.env.NODE_ENV === 'production',
+           sameSite: 'lax', // 'strict' breaks OAuth redirect callbacks
+           path: '/',
+         },
+       },
      },
      callbacks: {
        jwt({ token, user }) {

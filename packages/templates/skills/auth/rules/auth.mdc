@@ -43,7 +43,10 @@ They are non-negotiable.
 - Authentication tokens must never be stored in localStorage,
   sessionStorage, or any JavaScript-accessible browser storage
 - Tokens must be stored exclusively in HttpOnly, Secure,
-  SameSite=Strict cookies set by the server
+  SameSite=Lax cookies set by the server. Use SameSite=Strict
+  only when the application does not use OAuth/OIDC redirect
+  flows — Strict blocks cookies during IdP redirect callbacks
+  and will break sign-in
 - Refresh tokens must never be transmitted to or stored by
   client-side JavaScript
 - Token expiry must be enforced server-side — client-side expiry

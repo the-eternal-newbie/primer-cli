@@ -55,9 +55,9 @@ non-human identity principles.
 4. For Clerk (single user):
 ```typescript
    import { clerkClient } from '@clerk/nextjs/server';
-   await clerkClient.users.getUserSessionList({ userId });
-   // Revoke each session
-   for (const session of sessions.data) {
+
+   const sessionList = await clerkClient.users.getUserSessionList({ userId });
+   for (const session of sessionList.data) {
      await clerkClient.sessions.revokeSession(session.id);
    }
 ```

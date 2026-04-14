@@ -34,11 +34,11 @@ section on the policy enforcement point pattern.
          against the authenticated user's accessible set?
 
 3. Identify unprotected routes:
-```typescript
-   // Pattern to search for — routes without auth check
-   // Look for route handlers that access data without calling auth()
-   grep -r "prisma\." app/api --include="route.ts" | \
-     grep -v "auth()\|getSession\|currentUser"
+```bash
+  # Find route files that access prisma without an auth check
+  # Run separately to stay portable across GNU and BSD grep
+  grep -r "prisma\." app/api --include="route.ts" -l | \
+    xargs grep -L "auth()\|getSession\|currentUser"
 ```
 
 4. Test for IDOR vulnerabilities:

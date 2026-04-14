@@ -18,13 +18,23 @@ third-party script — exposes every token stored there.
 ```typescript
 // Server sets the cookie — never accessible to JavaScript
 res.cookie('session', token, {
-  httpOnly: true,    // inaccessible to document.cookie
-  secure: true,      // HTTPS only
-  sameSite: 'strict', // no cross-site requests
-  maxAge: 3600000,   // 1 hour in milliseconds
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',  // use 'strict' only when OAuth/OIDC redirects are not involved
+  maxAge: 3600000,
   path: '/',
 });
 ```
+
+**SameSite guidance:**
+- `strict`: maximum protection, but blocks cookies on cross-site top-level
+  navigation. Breaks OAuth/OIDC redirect flows where the IdP redirects back
+  to your app after authentication. Use only for non-OAuth session cookies.
+- `lax` (recommended default): allows cookies on top-level GET navigations
+  (OAuth callbacks) while blocking cross-site POST requests. Compatible with
+  all major OAuth/OIDC flows.
+- `none`: requires `secure: true`, allows all cross-site requests.
+  Use only for embedded widgets or cross-domain API calls.
 
 **Auth.js v5 configuration:**
 ```typescript
@@ -77,7 +87,10 @@ import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 
 export function middleware(request: Request) {
-  const nonce = crypto.randomBytes(16).toString('base64');
+  // Use Web Crypto API — compatible with both Edge and Node.js runtimes
+  const array = new Uint8Array(16);
+  crypto.getRandomValues(array);
+  const nonce = Buffer.from(array).toString('base64');
   const cspHeader = `
     default-src 'none';
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic';
@@ -92,6 +105,11 @@ export function middleware(request: Request) {
   return response;
 }
 ```
+
+**Runtime note:** Next.js Middleware runs on the Edge runtime by default
+where `node:crypto` is unavailable. The Web Crypto API (`crypto.getRandomValues`)
+works in both Edge and Node.js runtimes. If you need Node.js runtime for
+middleware, add `export const runtime = 'nodejs'` to the middleware file.
 
 **CSP violation reporting:**
 ```

@@ -59,14 +59,17 @@ CORS and security headers.
 
 4. Block identified malicious IP ranges:
 ```typescript
-   // Next.js middleware IP blocking
-   const BLOCKED_RANGES = ['192.168.x.x', '10.x.x.x']; // replace with actual ranges
+   const BLOCKED_RANGES = [
+     '203.0.113.0/24',   // TEST-NET-3 (RFC 5737) — replace with actual ranges
+     '198.51.100.0/24',  // TEST-NET-2 (RFC 5737) — replace with actual ranges
+   ];
 
-   export function middleware(request: NextRequest) {
-     const clientIp = request.ip ?? request.headers.get('x-forwarded-for');
-     if (clientIp && isInBlockedRange(clientIp, BLOCKED_RANGES)) {
-       return new Response('Forbidden', { status: 403 });
-     }
+   // isInBlockedRange expects CIDR notation strings
+   // Use a library like 'ip-cidr' or 'netmask' for CIDR matching
+   import IPCIDR from 'ip-cidr';
+
+   function isInBlockedRange(ip: string, ranges: string[]): boolean {
+     return ranges.some(range => new IPCIDR(range).contains(ip));
    }
 ```
 
