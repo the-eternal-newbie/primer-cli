@@ -5,7 +5,7 @@ before provisioning or scaling database infrastructure.
 
 ## Before executing
 
-Read `knowledge/performance.md` section on connection pool sizing.
+Read `docs/skills/database/knowledge/performance.md` section on connection pool sizing.
 
 ## Steps
 

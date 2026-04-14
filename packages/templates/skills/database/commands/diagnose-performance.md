@@ -5,7 +5,7 @@ bottlenecks using database instrumentation.
 
 ## Before executing
 
-Read `knowledge/performance.md` in full.
+Read `docs/skills/database/knowledge/performance.md` in full.
 
 ## Steps
 

@@ -5,8 +5,8 @@ separation, and credential security.
 
 ## Before executing
 
-Read `knowledge/anti-patterns.md` section on least privilege.
-Read `knowledge/performance.md` section on connection pool sizing.
+Read `docs/skills/database/knowledge/anti-patterns.md` section on least privilege.
+Read `docs/skills/database/knowledge/performance.md` section on connection pool sizing.
 
 ## Steps
 
@@ -28,7 +28,8 @@ Read `knowledge/performance.md` section on connection pool sizing.
 ```
 
 3. Store connection strings in environment variables only:
-   - `DATABASE_URL` — primary read/write connection
+   - `DATABASE_URL` — pooled connection for application queries
+   - `DATABASE_DIRECT_URL` — direct (non-pooled) connection for migrations
    - `DATABASE_READONLY_URL` — read replica connection (if applicable)
    - Never commit connection strings to source control
 
@@ -36,6 +37,7 @@ Read `knowledge/performance.md` section on connection pool sizing.
 ```typescript
    const env = z.object({
      DATABASE_URL: z.string().url(),
+     DATABASE_DIRECT_URL: z.string().url(),
      DATABASE_READONLY_URL: z.string().url().optional(),
    }).parse(process.env);
 ```

@@ -5,7 +5,7 @@ and fragmented storage.
 
 ## Before executing
 
-Read `knowledge/performance.md` section on VACUUM and bloat.
+Read `docs/skills/database/knowledge/performance.md` section on VACUUM and bloat.
 
 ## Steps
 

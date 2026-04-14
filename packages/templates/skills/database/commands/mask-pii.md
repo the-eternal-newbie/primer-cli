@@ -5,7 +5,7 @@ or pseudonymization strategies.
 
 ## Before executing
 
-Read `knowledge/governance.md` sections on PII classification and
+Read `docs/skills/database/knowledge/governance.md` sections on PII classification and
 dynamic data masking.
 
 ## Steps
@@ -24,22 +24,35 @@ dynamic data masking.
    - Tier 2 (Quasi-identifier): mask in non-production, aggregate for analytics
    - Tier 3 (Behavioral): pseudonymize for analytics use
 
-3. Implement masking for non-production environments:
+3. Implement masking on the non-production database directly:
 ```sql
+   -- Run these statements against your staging/dev database only.
+   -- Never run against production.
+
    -- Email masking: show first 3 chars + domain
-   UPDATE users SET email = regexp_replace(email, '(^[^@]{3})[^@]*(@.*)', '\1***\2')
-   WHERE environment != 'production';
+   UPDATE users SET email = regexp_replace(email, '(^[^@]{3})[^@]*(@.*)', '\1***\2');
 
    -- Name masking
-   UPDATE users SET first_name = 'User', last_name = id::text
-   WHERE environment != 'production';
+   UPDATE users SET first_name = 'User', last_name = id::text;
 ```
+   Always verify you are connected to the correct non-production database
+   before executing. Use `SELECT current_database();` to confirm.
 
-4. Implement column-level encryption for Tier 1 data at rest:
-   - Use application-layer encryption for fields that must be searchable
-     (deterministic encryption with consistent IV)
-   - Use random IV encryption for fields that are retrieved by ID only
-   - Store encryption key reference alongside encrypted value, never the key
+4. Implement appropriate encryption or tokenization for Tier 1 data at rest:
+   - For fields that must be searchable (e.g. email for login lookup):
+     use tokenization — replace the value with an opaque token and store
+     the mapping in a dedicated secrets vault. Never implement searchable
+     encryption with a hand-rolled IV scheme.
+   - For fields retrieved only by primary key (e.g. SSN, card data):
+     use AES-256-GCM with a random IV per value. Store IV alongside the
+     ciphertext. Never reuse IVs — IV reuse with GCM catastrophically
+     breaks confidentiality.
+   - For fields used only in equality comparisons without display:
+     use a keyed hash (HMAC-SHA256) with a secret key. Store the hash,
+     never the plaintext. This enables lookup without decryption.
+   - Store encryption keys in a dedicated secrets manager
+     (AWS KMS, HashiCorp Vault, GCP Cloud KMS) — never in the database
+     or application environment variables.
 
 5. Create masked views for analytics and reporting roles:
 ```sql

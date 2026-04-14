@@ -5,7 +5,7 @@ query patterns and execution plan analysis.
 
 ## Before executing
 
-Read `knowledge/performance.md` sections on index types, covering
+Read `docs/skills/database/knowledge/performance.md` sections on index types, covering
 indexes, and EXPLAIN ANALYZE.
 
 ## Steps

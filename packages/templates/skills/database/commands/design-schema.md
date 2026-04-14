@@ -4,8 +4,8 @@ Design a normalized, constraint-enforced schema for a new business entity.
 
 ## Before executing
 
-Read `knowledge/anti-patterns.md` in full.
-Read `knowledge/governance.md` sections on PII classification and lineage.
+Read `docs/skills/database/knowledge/anti-patterns.md` in full.
+Read `docs/skills/database/knowledge/governance.md` sections on PII classification and lineage.
 
 ## Steps
 

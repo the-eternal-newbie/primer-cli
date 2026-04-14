@@ -1,4 +1,4 @@
-import { readdir, copyFile, mkdir } from "node:fs/promises";
+import { readdir, copyFile, mkdir, access } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { createRequire } from "node:module";
@@ -42,6 +42,17 @@ export async function installSkills(
 
   for (const skill of skills) {
     const src = join(skillsRoot, skill);
+
+    // Validate source exists before attempting copy
+    try {
+      await access(src);
+    } catch {
+      throw new Error(
+        `Skill package "${skill}" not found at ${src}. ` +
+        `This may indicate a version mismatch between @monomit/primer and @monomit/primer-templates.`
+      );
+    }
+
     const dest = join(outputDir, "docs", "skills", skill);
     await copyDir(src, dest);
   }

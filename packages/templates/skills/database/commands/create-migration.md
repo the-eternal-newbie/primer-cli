@@ -4,7 +4,7 @@ Author a safe, backward-compatible migration using the expand/contract pattern.
 
 ## Before executing
 
-Read `knowledge/migration-safety.md` in full before authoring any migration.
+Read `docs/skills/database/knowledge/migration-safety.md` in full before authoring any migration.
 
 ## Steps
 
@@ -46,7 +46,7 @@ Read `knowledge/migration-safety.md` in full before authoring any migration.
 
 7. Generate production migration script:
 ```bash
-   prisma migrate deploy --preview-feature
+   prisma migrate deploy
 ```
 
 8. For production execution:

@@ -5,7 +5,7 @@ minimal downtime.
 
 ## Before executing
 
-Read `knowledge/migration-safety.md` section on rollback strategy.
+Read `docs/skills/database/knowledge/migration-safety.md` section on rollback strategy.
 Confirm the migration being rolled back is classified as reversible.
 
 ## Steps
