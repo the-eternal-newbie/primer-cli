@@ -21,6 +21,11 @@ export const AVAILABLE_SKILLS = [
     label: "Backend",
     hint: "API contracts, resilience, traffic control, observability, agentic backends",
   },
+  {
+    value: "frontend",
+    label: "Frontend",
+    hint: "RSC boundary, hydration, FSD architecture, Core Web Vitals, accessibility",
+  },
 ] as const;
 
 export type SkillName = typeof AVAILABLE_SKILLS[number]["value"];
