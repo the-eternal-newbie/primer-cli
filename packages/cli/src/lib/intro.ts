@@ -84,7 +84,7 @@ const MASCOT: string[] = [
 const MASCOT_W = 9;
 const GAP = "     "; // 5 spaces
 
-export type Command = "init" | "retrofit";
+export type Command = "init" | "retrofit" | "brief-me";
 
 export async function showIntroAndSelectCommand(): Promise<Command> {
   const version = getVersion();
@@ -126,6 +126,7 @@ export async function showIntroAndSelectCommand(): Promise<Command> {
   console.log("");
   console.log(`${infoIndent}${C.orange}${C.bold}Commands${C.reset}`);
   console.log(`${infoIndent}${C.white}init      ${C.dim}scaffold a new AI-ready project${C.reset}`);
+  console.log(`${infoIndent}${C.white}brief-me  ${C.dim}generate a technical brief from project documentation${C.reset}`);
   console.log(`${infoIndent}${C.white}retrofit  ${C.dim}add agent conventions to existing project${C.reset}`);
   console.log("");
   console.log(`${indent}${C.dim}${"─".repeat(52)}${C.reset}`);
@@ -139,6 +140,11 @@ export async function showIntroAndSelectCommand(): Promise<Command> {
         value: "init",
         label: "init",
         hint: "scaffold a new project",
+      },
+      {
+        value: "brief-me",
+        label: "brief-me",
+        hint: "generate a technical brief from project documentation",
       },
       {
         value: "retrofit",

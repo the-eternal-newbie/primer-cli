@@ -2,6 +2,12 @@ import * as p from "@clack/prompts";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
+import {
+    readProjectConfig,
+    writeProjectConfig,
+    updateProjectConfig,
+    getPrimerVersion,
+} from "../lib/project.ts";
 const { renderTemplate, copyStaticFile } = await import("../lib/scaffold.ts");
 import { installSkills, writeSkillsToTools, AVAILABLE_SKILLS } from "../lib/skills.ts";
 import {
@@ -9,9 +15,9 @@ import {
     resolveSteps,
     writeOutputFile,
 } from "../lib/scaffold.ts";
-import type { ScaffoldContext, PackageManager, AiTool, SkillEntry } from "../lib/scaffold.ts";
 import { getTemplatesRoot } from "../lib/resolve.ts";
 import type { SkillName } from "../lib/skills.ts";
+import type { ScaffoldContext, PackageManager, AiTool, SkillEntry } from "../lib/scaffold.ts";
 
 const DRY_RUN = process.argv.includes("--dry-run");
 const FORCE = process.argv.includes("--force");
@@ -360,5 +366,26 @@ export async function runRetrofit(): Promise<void> {
         p.outro(
             `Done. ${written} file${written !== 1 ? "s" : ""} written, ${skipped} skipped.`
         );
+    }
+
+    // Update or create primer project config
+    if (!DRY_RUN) {
+        const existing = readProjectConfig(cwd);
+        if (existing) {
+            updateProjectConfig(cwd, {
+                aiTools,
+                skills: [...new Set([...existing.skills, ...skillsToAdd])],
+            });
+        } else {
+            writeProjectConfig(cwd, {
+                projectName: detected.projectName,
+                packageManager: detected.packageManager,
+                aiProvider: null,
+                aiTools,
+                skills: allInstalledSkills,
+                createdAt: new Date().toISOString(),
+                primerVersion: getPrimerVersion(),
+            });
+        }
     }
 }
