@@ -4,6 +4,11 @@ import { existsSync } from "node:fs";
 import { execSync } from "node:child_process";
 import Mustache from "mustache";
 
+export interface SkillEntry {
+  name: string;
+  slug: string;
+}
+
 export interface ScaffoldContext {
   projectName: string;
   packageManager: "pnpm" | "npm" | "yarn";
@@ -13,6 +18,8 @@ export interface ScaffoldContext {
   cursorEnabled: boolean;
   claudeEnabled: boolean;
   initGit: boolean;
+  hasSkills: boolean;
+  installedSkillsList: SkillEntry[];
 }
 
 export type AiTool = ScaffoldContext["aiTools"][number];

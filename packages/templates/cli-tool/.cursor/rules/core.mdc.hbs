@@ -28,19 +28,19 @@ They are non-negotiable and take precedence over convenience.
 ## File organization
 
 - One concept per file
-- `src/commands/` — one file per CLI subcommand
-- `src/lib/` — shared utilities including I/O helpers, git operations, and other
-  infrastructure concerns; keep functions focused and explicitly typed
+- Keep modules focused and explicitly typed
 - No barrel files (`index.ts` re-exports) — import directly from the source file
+- See `docs/CANONICAL_ARCHITECTURE.md` for the directory structure specific
+  to this project
 
 ## Error handling
 
 - Never swallow errors silently
-- User-facing errors go through the CLI output layer (never raw `console.error`)
+- User-facing errors go through the designated output layer (never raw `console.error`)
 - All async functions must handle rejection explicitly
 
 ## Testing
 
 - Tests live alongside source in `src/**/*.test.ts`
-- Test pure functions in `src/lib/` first — highest leverage
+- Test business logic first — highest leverage
 - No arbitrary `setTimeout` in tests — use deterministic assertions

@@ -3,14 +3,14 @@ import { join } from "node:path";
 import { existsSync } from "node:fs";
 import { loadConfig } from "../lib/config.ts";
 import { getTemplatesRoot } from "../lib/resolve.ts";
-import { installSkills, AVAILABLE_SKILLS } from "../lib/skills.ts";
+import { installSkills, writeSkillsToTools, AVAILABLE_SKILLS } from "../lib/skills.ts";
 import {
   scaffoldDir,
   resolvePackageManagerVersion,
   resolvePackageManagerRun,
 } from "../lib/scaffold.ts";
+import type { ScaffoldContext, AiTool, PackageManager, SkillEntry } from "../lib/scaffold.ts";
 import type { SkillName } from "../lib/skills.ts";
-import type { ScaffoldContext, AiTool, PackageManager } from "../lib/scaffold.ts";
 import {
   PROVIDERS,
   resolveApiKey,
@@ -160,17 +160,18 @@ export async function runInit(): Promise<void> {
 
     aiProvider = aiAnswers.provider as ProviderKey;
     projectDescription = aiAnswers.description as string;
-    projectConstraints = aiAnswers.constraints as string ?? "";
+    projectConstraints = (aiAnswers.constraints as string) ?? "";
     techStack = {
       language: aiAnswers.language as string,
-      frameworks: aiAnswers.frameworks as string ?? "",
-      infrastructure: aiAnswers.infrastructure as string ?? "",
+      frameworks: (aiAnswers.frameworks as string) ?? "",
+      infrastructure: (aiAnswers.infrastructure as string) ?? "",
     };
   }
 
   // --- Build scaffold context ---
   const pm = base.packageManager as PackageManager;
   const aiTools = base.aiTools as AiTool[];
+  const skills = (base.skills ?? []) as SkillName[];
 
   const context: ScaffoldContext = {
     projectName: base.projectName as string,
@@ -181,6 +182,8 @@ export async function runInit(): Promise<void> {
     cursorEnabled: aiTools.includes("cursor"),
     claudeEnabled: aiTools.includes("claude-code"),
     initGit: base.initGit as boolean,
+    hasSkills: false,
+    installedSkillsList: [],
   };
 
   const outputDir = join(process.cwd(), context.projectName);
@@ -190,40 +193,62 @@ export async function runInit(): Promise<void> {
     process.exit(1);
   }
 
-  // --- Scaffold static files ---
+  // Create output directory before any file operations
+  const { mkdir } = await import("node:fs/promises");
+  await mkdir(outputDir, { recursive: true });
+
+  // --- Install skills (before scaffolding so context is fully populated) ---
+  let installedSkills: SkillName[] = [];
+
+  if (skills.length > 0) {
+    const ss = p.spinner();
+    ss.start("Installing skill packages");
+    try {
+      await installSkills(outputDir, skills);
+      installedSkills = skills;
+      context.hasSkills = true;
+      context.installedSkillsList = installedSkills.map(
+        (slug): SkillEntry => ({
+          slug,
+          name: AVAILABLE_SKILLS.find((s) => s.value === slug)?.label ?? slug,
+        })
+      );
+      ss.stop(
+        `Installed ${skills.length} skill package${skills.length > 1 ? "s" : ""}`
+      );
+    } catch (err) {
+      ss.stop("Skill installation failed");
+      p.log.error(String(err));
+      p.log.warn(
+        "Skills failed to install — skill references will be omitted from " +
+        "AGENTS.md and CLAUDE.md. Run primer again or add skill files manually."
+      );
+    }
+  }
+
+  // --- Scaffold static files (after skills resolved so context is complete) ---
   const templatesRoot = getTemplatesRoot("cli-tool");
   const s = p.spinner();
   s.start("Scaffolding project");
 
   try {
     await scaffoldDir(templatesRoot, outputDir, context);
+
+    // Write full skill content into tool-specific directories
+    if (installedSkills.length > 0) {
+      await writeSkillsToTools(
+        outputDir,
+        installedSkills,
+        context.cursorEnabled,
+        context.claudeEnabled,
+      );
+    }
+
     s.stop("Project scaffolded");
   } catch (err) {
     s.stop("Scaffolding failed");
     p.cancel(String(err));
     process.exit(1);
-  }
-
-  // --- Install skills ---
-  const skills = (base.skills ?? []) as SkillName[];
-  let installedSkills: SkillName[] = skills;
-  if (skills.length > 0) {
-    const ss = p.spinner();
-    ss.start("Installing skill packages");
-    try {
-      await installSkills(outputDir, skills);
-      ss.stop(`Installed ${skills.length} skill package${skills.length > 1 ? "s" : ""}`);
-    } catch (err) {
-      installedSkills = [];
-      ss.stop("Skill installation failed");
-      p.log.error(String(err));
-      p.log.warn(
-        "The project was scaffolded but skill files are missing. " +
-        "AI agent generation will skip skill references so docs do not point to missing files. " +
-        "Run primer again or add skill files manually."
-      );
-      // Don't exit — the rest of the project is still valid
-    }
   }
 
   // --- AI agent generation ---
@@ -235,7 +260,9 @@ export async function runInit(): Promise<void> {
       apiKey = await resolveApiKey(provider);
     } catch (err) {
       p.log.warn(`Could not resolve API key: ${String(err)}`);
-      p.log.warn("Skipping AI agent generation — project scaffolded without agents.");
+      p.log.warn(
+        "Skipping AI agent generation — project scaffolded without agents."
+      );
       apiKey = "";
     }
 
@@ -278,7 +305,9 @@ export async function runInit(): Promise<void> {
       } catch (err) {
         as.stop("Agent generation failed");
         p.log.warn(String(err));
-        p.log.warn("Project scaffolded without AI agents — you can add them manually.");
+        p.log.warn(
+          "Project scaffolded without AI agents — you can add them manually."
+        );
       }
     }
   }

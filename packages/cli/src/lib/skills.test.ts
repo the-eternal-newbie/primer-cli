@@ -1,9 +1,9 @@
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, rm, access } from "node:fs/promises";
+import { mkdtemp, rm, access, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { installSkills } from "./skills.ts";
+import { installSkills, writeSkillsToTools } from "./skills.ts";
 
 async function exists(p: string): Promise<boolean> {
     try {
@@ -152,6 +152,73 @@ describe("installSkills", () => {
             assert.ok(await exists(join(testingDir, "docs", "skills", "testing", "commands", "diagnose-flakiness.md")));
         } finally {
             await rm(testingDir, { recursive: true, force: true });
+        }
+    });
+});
+
+
+describe("writeSkillsToTools", () => {
+    let tmpDir: string;
+
+    before(async () => {
+        tmpDir = await mkdtemp(join(tmpdir(), "primer-tools-test-"));
+    });
+
+    after(async () => {
+        await rm(tmpDir, { recursive: true, force: true });
+    });
+
+    it("writes database rule to .cursor/rules/ with correct glob format", async () => {
+        await writeSkillsToTools(tmpDir, ["database"], true, false);
+
+        const rulePath = join(tmpDir, ".cursor", "rules", "database.mdc");
+        assert.ok(await exists(rulePath));
+
+        const content = await readFile(rulePath, "utf-8");
+        // Should have unquoted glob string, not JSON array
+        assert.ok(content.includes("globs: **/*.prisma"));
+        assert.ok(!content.includes('globs: ["'));
+        assert.ok(!content.includes("globs: ["));
+    });
+
+    it("writes database commands to .cursor/commands/agents/database/", async () => {
+        const dir = await mkdtemp(join(tmpdir(), "primer-cursor-test-"));
+        try {
+            await writeSkillsToTools(dir, ["database"], true, false);
+            assert.ok(await exists(join(dir, ".cursor", "commands", "agents", "database", "setup-connection.md")));
+            assert.ok(await exists(join(dir, ".cursor", "commands", "agents", "database", "create-migration.md")));
+        } finally {
+            await rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it("writes database commands to .claude/commands/agents/database/", async () => {
+        const dir = await mkdtemp(join(tmpdir(), "primer-claude-test-"));
+        try {
+            await writeSkillsToTools(dir, ["database"], false, true);
+            assert.ok(await exists(join(dir, ".claude", "commands", "agents", "database", "setup-connection.md")));
+            assert.ok(!await exists(join(dir, ".cursor")));
+        } finally {
+            await rm(dir, { recursive: true, force: true });
+        }
+    });
+
+    it("reads command files once and writes to both tools", async () => {
+        const dir = await mkdtemp(join(tmpdir(), "primer-both-tools-test-"));
+        try {
+            await writeSkillsToTools(dir, ["auth"], true, true);
+            const cursorCmd = join(dir, ".cursor", "commands", "agents", "auth", "setup-auth-provider.md");
+            const claudeCmd = join(dir, ".claude", "commands", "agents", "auth", "setup-auth-provider.md");
+            assert.ok(await exists(cursorCmd));
+            assert.ok(await exists(claudeCmd));
+
+            // Content should be identical — read once, written twice
+            const { readFile } = await import("node:fs/promises");
+            const cursorContent = await readFile(cursorCmd, "utf-8");
+            const claudeContent = await readFile(claudeCmd, "utf-8");
+            assert.equal(cursorContent, claudeContent);
+        } finally {
+            await rm(dir, { recursive: true, force: true });
         }
     });
 });

@@ -7,7 +7,6 @@ Read it fully before writing any code.
 
 **Name:** {{projectName}}
 **Package manager:** {{packageManager}}
-**Type:** CLI tool (Node.js, TypeScript, ESM)
 
 ## Before you write any code
 
@@ -20,6 +19,9 @@ Read it fully before writing any code.
 {{#claudeEnabled}}
 - Read `.claude/CLAUDE.md` — Claude-specific conventions and rules
 {{/claudeEnabled}}
+{{#hasSkills}}
+- Read skill knowledge docs listed in the Installed Skills section below
+{{/hasSkills}}
 
 ## Commands available to you
 
@@ -34,24 +36,34 @@ Load them from your tool's commands directory before using them.
 
 ## Non-negotiables
 
-- Never commit directly to `main`
+- Never commit directly to the default branch
 - Never skip typecheck, lint, or tests before committing
 - Never invent APIs — check canonical docs first
 - Always stop and confirm with the human before destructive operations
 - Every phase of work ends with an explicit file list and a STOP marker
 
+{{#hasSkills}}
+## Installed skills
+
+These skill packages are installed in `docs/skills/`. Read the relevant
+knowledge documents before working in each domain.
+
+| Skill | Knowledge | Commands |
+|---|---|---|
+{{#installedSkillsList}}
+| {{name}} | `docs/skills/{{slug}}/knowledge/` | `docs/skills/{{slug}}/commands/` |
+{{/installedSkillsList}}
+{{/hasSkills}}
+
 ## Project structure
 
 ```
 {{projectName}}/
-├── src/
-│   ├── index.ts          ← entry point
-│   ├── commands/         ← one file per subcommand
-│   └── lib/              ← shared utilities
+├── src/                  ← source code
 ├── docs/                 ← canonical documentation (read before coding)
 {{#cursorEnabled}}
 ├── .cursor/
-│   ├── rules/            ← scoped agent rules
+│   ├── rules/            ← scoped agent rules (auto-loaded by Cursor)
 │   └── commands/         ← agent slash commands
 {{/cursorEnabled}}
 {{#claudeEnabled}}
