@@ -41,6 +41,12 @@ export const DOTFILE_RENAMES: Record<string, string> = {
   npmrc: ".npmrc",
 } as const;
 
+export function resolveSteps(hasSkills: boolean): { nextStep: number; finalStep: number } {
+  return hasSkills
+    ? { nextStep: 4, finalStep: 5 }
+    : { nextStep: 3, finalStep: 4 };
+}
+
 export function resolvePackageManagerVersion(
   pm: string,
   runner: (cmd: string) => string = (cmd) =>
