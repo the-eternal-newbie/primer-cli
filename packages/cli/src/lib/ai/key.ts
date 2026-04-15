@@ -26,7 +26,7 @@ export async function resolveApiKey(
     });
 
     if (p.isCancel(key)) {
-        p.cancel("Cancelled.");
+        p.cancel("Cancelled. See you space cowboy!");
         process.exit(0);
     }
 

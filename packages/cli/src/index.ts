@@ -13,6 +13,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { runInit } from "./commands/init.ts";
 import { runRetrofit } from "./commands/retrofit.ts";
+import { showIntroAndSelectCommand } from "./lib/intro.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -72,6 +73,7 @@ ENVIRONMENT VARIABLES
   GEMINI_MODEL         Override Gemini model (default: gemini-2.0-flash)
 
 EXAMPLES
+  primer              Show intro and status
   primer init
   primer init --offline
   primer retrofit
@@ -104,20 +106,36 @@ if (values.version) {
   process.exit(0);
 }
 
-const command = positionals[0];
+// Show intro when invoked with no arguments
+(async () => {
+  const command = positionals[0] as string | undefined;
 
-if (!command || command === "init") {
-  runInit().catch((err: unknown) => {
-    console.error("Error:", err instanceof Error ? err.message : String(err));
+  if (!command) {
+    const selected = await showIntroAndSelectCommand();
+    if (selected === "init") {
+      await runInit();
+    } else if (selected === "retrofit") {
+      await runRetrofit();
+    }
+    return;
+  }
+
+  if (command === "init") {
+    runInit().catch((err: unknown) => {
+      console.error("Error:", err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    });
+  } else if (command === "retrofit") {
+    runRetrofit().catch((err: unknown) => {
+      console.error("Error:", err instanceof Error ? err.message : String(err));
+      process.exit(1);
+    });
+  } else {
+    console.error(`Unknown command: ${command}`);
+    console.error(`Run "primer --help" for usage.`);
     process.exit(1);
-  });
-} else if (command === "retrofit") {
-  runRetrofit().catch((err: unknown) => {
-    console.error("Error:", err instanceof Error ? err.message : String(err));
-    process.exit(1);
-  });
-} else {
-  console.error(`Unknown command: ${command}`);
-  console.error(`Run "primer --help" for usage.`);
+  }
+})().catch((err: unknown) => {
+  console.error("Error:", err instanceof Error ? err.message : String(err));
   process.exit(1);
-}
+});
