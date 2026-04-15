@@ -1,6 +1,6 @@
 {
     "name": "@monomit/primer-templates",
-    "version": "0.9.0",
+    "version": "1.0.0",
     "private": false,
     "type": "module",
     "files": [
