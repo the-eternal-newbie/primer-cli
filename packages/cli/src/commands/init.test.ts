@@ -40,6 +40,8 @@ describe("scaffold integration", () => {
       cursorEnabled: true,
       claudeEnabled: false,
       initGit: false,
+      hasSkills: false,
+      installedSkillsList: [],
     };
 
     await scaffoldDir(templatesRoot, outDir, context);
@@ -66,6 +68,8 @@ describe("scaffold integration", () => {
       cursorEnabled: false,
       claudeEnabled: true,
       initGit: false,
+      hasSkills: false,
+      installedSkillsList: [],
     };
 
     await scaffoldDir(templatesRoot, outDir, context);
@@ -94,6 +98,8 @@ describe("scaffold integration", () => {
       cursorEnabled: true,
       claudeEnabled: true,
       initGit: false,
+      hasSkills: false,
+      installedSkillsList: [],
     };
 
     await scaffoldDir(templatesRoot, outDir, context);
@@ -113,6 +119,8 @@ describe("scaffold integration", () => {
       cursorEnabled: true,
       claudeEnabled: false,
       initGit: false,
+      hasSkills: false,
+      installedSkillsList: [],
     };
 
     await scaffoldDir(templatesRoot, outDir, context);
