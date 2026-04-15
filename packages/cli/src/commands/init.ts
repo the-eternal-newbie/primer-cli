@@ -79,7 +79,7 @@ export async function runInit(): Promise<void> {
     },
     {
       onCancel: () => {
-        p.cancel("Cancelled.");
+        p.cancel("Cancelled. See you space cowboy!");
         process.exit(0);
       },
     }
@@ -152,7 +152,7 @@ export async function runInit(): Promise<void> {
       },
       {
         onCancel: () => {
-          p.cancel("Cancelled.");
+          p.cancel("Cancelled. See you space cowboy!");
           process.exit(0);
         },
       }

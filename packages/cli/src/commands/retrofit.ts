@@ -172,7 +172,7 @@ export async function runRetrofit(): Promise<void> {
         },
         {
             onCancel: () => {
-                p.cancel("Cancelled.");
+                p.cancel("Cancelled. See you space cowboy!");
                 process.exit(0);
             },
         }
