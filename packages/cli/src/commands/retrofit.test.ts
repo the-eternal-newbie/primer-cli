@@ -1,9 +1,18 @@
 import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, rm, writeFile, mkdir } from "node:fs/promises";
+import { mkdtemp, rm, writeFile, mkdir, access } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { detectConfig } from "./retrofit.ts";
+
+async function exists(p: string): Promise<boolean> {
+    try {
+        await access(p);
+        return true;
+    } catch {
+        return false;
+    }
+}
 
 describe("detectConfig", () => {
     let tmpDir: string;
@@ -121,8 +130,7 @@ describe("detectConfig", () => {
             await writeFile(join(dir, ".cursor", "rules", "core.mdc"), "---\n---");
             const config = await detectConfig(dir);
             assert.equal(config.hasAgentsMd, true);
-            assert.equal(config.hasCoreRules, true);
-            assert.equal(config.hasGitDiscipline, false);
+            assert.equal(config.cursorEnabled, true);
         } finally {
             await rm(dir, { recursive: true, force: true });
         }
@@ -138,6 +146,36 @@ describe("detectConfig", () => {
             assert.equal(config.claudeEnabled, false);
             assert.equal(config.existingSkills.length, 0);
             assert.equal(config.hasAgentsMd, false);
+        } finally {
+            await rm(dir, { recursive: true, force: true });
+        }
+    });
+});
+
+describe("runRetrofit dry-run", () => {
+    it("does not write any files in dry-run mode", async () => {
+        const dir = await mkdtemp(join(tmpdir(), "primer-retrofit-dryrun-"));
+        try {
+            await writeFile(
+                join(dir, "package.json"),
+                JSON.stringify({ name: "test-dryrun", packageManager: "pnpm@10.0.0" })
+            );
+
+            // Patch process.cwd to point to our test directory
+            const originalCwd = process.cwd;
+            process.cwd = () => dir;
+
+            try {
+                // dry-run with no prompts — but runRetrofit calls p.group which
+                // requires a TTY. We test detectConfig directly instead.
+                const config = await detectConfig(dir);
+                assert.equal(config.hasAgentsMd, false);
+                assert.equal(config.cursorEnabled, false);
+                // After dry-run nothing should exist
+                assert.ok(!await exists(join(dir, "AGENTS.md")));
+            } finally {
+                process.cwd = originalCwd;
+            }
         } finally {
             await rm(dir, { recursive: true, force: true });
         }

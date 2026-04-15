@@ -21,14 +21,9 @@ export interface DetectedConfig {
     claudeEnabled: boolean;
     existingSkills: SkillName[];
     hasAgentsMd: boolean;
-    hasCoreRules: boolean;
-    hasGitDiscipline: boolean;
-    hasClaudeMd: boolean;
-    hasGitCommands: boolean;
 }
 
 export async function detectConfig(cwd: string): Promise<DetectedConfig> {
-    // Detect project name and package manager from package.json
     let projectName = "unknown";
     let packageManager: PackageManager = "npm";
 
@@ -50,11 +45,9 @@ export async function detectConfig(cwd: string): Promise<DetectedConfig> {
         }
     }
 
-    // Detect AI tools
     const cursorEnabled = existsSync(join(cwd, ".cursor"));
     const claudeEnabled = existsSync(join(cwd, ".claude"));
 
-    // Detect existing skills
     const existingSkills: SkillName[] = [];
     const skillsDir = join(cwd, "docs", "skills");
     if (existsSync(skillsDir)) {
@@ -69,16 +62,11 @@ export async function detectConfig(cwd: string): Promise<DetectedConfig> {
                 }
             }
         } catch {
-            // skills dir unreadable — treat as empty
+            // skills dir unreadable
         }
     }
 
-    // Detect existing primer files
     const hasAgentsMd = existsSync(join(cwd, "AGENTS.md"));
-    const hasCoreRules = existsSync(join(cwd, ".cursor", "rules", "core.mdc"));
-    const hasGitDiscipline = existsSync(join(cwd, ".cursor", "rules", "git-discipline.mdc"));
-    const hasClaudeMd = existsSync(join(cwd, ".claude", "CLAUDE.md"));
-    const hasGitCommands = existsSync(join(cwd, ".cursor", "commands", "git-start-work.md"));
 
     return {
         projectName,
@@ -87,10 +75,6 @@ export async function detectConfig(cwd: string): Promise<DetectedConfig> {
         claudeEnabled,
         existingSkills,
         hasAgentsMd,
-        hasCoreRules,
-        hasGitDiscipline,
-        hasClaudeMd,
-        hasGitCommands,
     };
 }
 
