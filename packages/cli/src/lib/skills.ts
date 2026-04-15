@@ -7,11 +7,11 @@ import { writeOutputFile } from "./scaffold.ts";
 const require = createRequire(import.meta.url);
 
 const SKILL_GLOBS: Record<string, string> = {
-  database: '"**/*.prisma, **/migrations/**, **/*repository*, **/*migration*, **/*schema*"',
-  auth: '"**/auth/**, **/*auth*, **/*session*, **/*token*, **/*middleware*"',
-  backend: '"**/api/**, **/routes/**, **/*service*, **/*controller*, **/services/**"',
-  frontend: '"**/*.tsx, **/*.jsx, **/components/**, **/pages/**, **/app/**"',
-  testing: '"**/*.test.*, **/*.spec.*, **/tests/**, **/e2e/**"',
+  database: "**/*.prisma, **/migrations/**, **/*repository*, **/*migration*, **/*schema*",
+  auth: "**/auth/**, **/*auth*, **/*session*, **/*token*, **/*middleware*",
+  backend: "**/api/**, **/routes/**, **/*service*, **/*controller*, **/services/**",
+  frontend: "**/*.tsx, **/*.jsx, **/components/**, **/pages/**, **/app/**",
+  testing: "**/*.test.*, **/*.spec.*, **/tests/**, **/e2e/**",
 };
 
 export const AVAILABLE_SKILLS = [
@@ -118,7 +118,7 @@ export async function writeSkillsToTools(
           let content = await readFile(join(rulesDir, file), "utf-8");
 
           // Replace the generic glob with skill-specific globs
-          const globs = SKILL_GLOBS[skill] ?? '"**/*"';
+          const globs = SKILL_GLOBS[skill] ?? "**/*";
           content = content.replace(
             /globs:\s*\[.*?\]/,
             `globs: ${globs}`
