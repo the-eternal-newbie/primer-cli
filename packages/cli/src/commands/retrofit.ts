@@ -14,7 +14,7 @@ import type { SkillName } from "../lib/skills.ts";
 const DRY_RUN = process.argv.includes("--dry-run");
 const FORCE = process.argv.includes("--force");
 
-interface DetectedConfig {
+export interface DetectedConfig {
     projectName: string;
     packageManager: PackageManager;
     cursorEnabled: boolean;
@@ -27,7 +27,7 @@ interface DetectedConfig {
     hasGitCommands: boolean;
 }
 
-async function detectConfig(cwd: string): Promise<DetectedConfig> {
+export async function detectConfig(cwd: string): Promise<DetectedConfig> {
     // Detect project name and package manager from package.json
     let projectName = "unknown";
     let packageManager: PackageManager = "npm";
