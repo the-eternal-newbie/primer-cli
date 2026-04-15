@@ -1,6 +1,6 @@
 {
     "name": "@monomit/primer-templates",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "private": false,
     "description": "scaffold AI-ready projects with pre-configured agent conventions",
     "keywords": [
