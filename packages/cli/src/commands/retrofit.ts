@@ -2,6 +2,7 @@ import * as p from "@clack/prompts";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
+const { renderTemplate, copyStaticFile } = await import("../lib/scaffold.ts");
 import { installSkills, writeSkillsToTools, AVAILABLE_SKILLS } from "../lib/skills.ts";
 import {
     resolvePackageManagerRun,
@@ -212,7 +213,6 @@ export async function runRetrofit(): Promise<void> {
 
     // --- AGENTS.md ---
     if (!detected.hasAgentsMd || FORCE) {
-        const { renderTemplate } = await import("../lib/scaffold.ts");
         const agentsMdPath = join(templatesRoot, "AGENTS.md.hbs");
         if (existsSync(agentsMdPath)) {
             const content = await renderTemplate(agentsMdPath, context);
@@ -249,12 +249,8 @@ export async function runRetrofit(): Promise<void> {
                     continue;
                 }
 
-                const { renderTemplate, copyStaticFile } = await import("../lib/scaffold.ts");
                 if (file.endsWith(".hbs")) {
-                    const content = await renderTemplate(
-                        join(rulesTemplatesDir, file),
-                        context
-                    );
+                    const content = await renderTemplate(join(rulesTemplatesDir, file), context);
                     await writeOutputFile(destPath, content);
                 } else {
                     await copyStaticFile(join(rulesTemplatesDir, file), destPath);
@@ -282,12 +278,8 @@ export async function runRetrofit(): Promise<void> {
                     continue;
                 }
 
-                const { renderTemplate, copyStaticFile } = await import("../lib/scaffold.ts");
                 if (file.endsWith(".hbs")) {
-                    const content = await renderTemplate(
-                        join(cmdTemplatesDir, file),
-                        context
-                    );
+                    const content = await renderTemplate(join(cmdTemplatesDir, file), context);
                     await writeOutputFile(destPath, content);
                 } else {
                     await copyStaticFile(join(cmdTemplatesDir, file), destPath);
@@ -301,12 +293,11 @@ export async function runRetrofit(): Promise<void> {
     if (claudeEnabled) {
         const claudeTemplatePath = join(templatesRoot, ".claude", "CLAUDE.md.hbs");
         if (existsSync(claudeTemplatePath)) {
-            const { renderTemplate } = await import("../lib/scaffold.ts");
             const content = await renderTemplate(claudeTemplatePath, context);
             const result = await safeWrite(
                 join(cwd, ".claude", "CLAUDE.md"),
                 content,
-                ".claude/CLAUDE.md"
+                ".claude/CLAUDE.md",
             );
             if (result === "written") written++;
             if (result === "skipped") skipped++;
@@ -330,12 +321,8 @@ export async function runRetrofit(): Promise<void> {
                     continue;
                 }
 
-                const { renderTemplate, copyStaticFile } = await import("../lib/scaffold.ts");
                 if (file.endsWith(".hbs")) {
-                    const content = await renderTemplate(
-                        join(claudeCmdDir, file),
-                        context
-                    );
+                    const content = await renderTemplate(join(claudeCmdDir, file), context);
                     await writeOutputFile(destPath, content);
                 } else {
                     await copyStaticFile(join(claudeCmdDir, file), destPath);
