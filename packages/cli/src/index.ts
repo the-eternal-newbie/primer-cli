@@ -120,7 +120,7 @@ if (values.version) {
     if (selected === "init") {
       await runInit();
     } else if (selected === "brief-me") {
-      await runBriefMe(null, false);
+      await runBriefMe();
     } else if (selected === "retrofit") {
       await runRetrofit();
     }

@@ -58,7 +58,7 @@ function resolveProvider(aiProvider: string | null): ProviderKey | null {
     return null;
 }
 
-async function collectDocsAndAgents(
+export async function collectDocsAndAgents(
     cwd: string,
     domain: Domain | null
 ): Promise<{ docs: string; agents: string[] }> {
@@ -117,7 +117,7 @@ async function collectDocsAndAgents(
     return { docs: sections.join("\n\n---\n\n"), agents };
 }
 
-function buildBriefPrompt(
+export function buildBriefPrompt(
     projectName: string,
     domain: Domain | null,
     docs: string,
