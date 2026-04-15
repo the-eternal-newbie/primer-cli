@@ -11,9 +11,11 @@ import { parseArgs } from "node:util";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { runBriefMe } from "./commands/brief-me.ts";
 import { runInit } from "./commands/init.ts";
 import { runRetrofit } from "./commands/retrofit.ts";
 import { showIntroAndSelectCommand } from "./lib/intro.ts";
+import type { Domain } from "./commands/brief-me.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -34,10 +36,12 @@ USAGE
 COMMANDS
   init        Scaffold a new project with agent conventions
   retrofit    Add agent conventions to an existing project
+  brief-me    Generate a technical brief from project documentation
 
 FLAGS
   --help      Show this help message
   --version   Show the current version
+  --domain    Domain to brief (brief-me only): backend|database|auth|frontend|testing
   --offline   Skip AI agent generation (init only)
   --dry-run   Preview changes without writing files (retrofit only)
   --force     Overwrite existing files (retrofit only)
@@ -88,6 +92,7 @@ const { values, positionals } = parseArgs({
   options: {
     help: { type: "boolean", short: "h" },
     version: { type: "boolean", short: "v" },
+    domain: { type: "string" },
     offline: { type: "boolean" },
     "dry-run": { type: "boolean" },
     force: { type: "boolean" },
@@ -114,6 +119,8 @@ if (values.version) {
     const selected = await showIntroAndSelectCommand();
     if (selected === "init") {
       await runInit();
+    } else if (selected === "brief-me") {
+      await runBriefMe();
     } else if (selected === "retrofit") {
       await runRetrofit();
     }
@@ -130,6 +137,12 @@ if (values.version) {
       console.error("Error:", err instanceof Error ? err.message : String(err));
       process.exit(1);
     });
+  } else if (command === "brief-me") {
+    const domain = values["domain"] as string | undefined;
+    await runBriefMe(
+      domain as Domain | null ?? null,
+      values["offline"] === true,
+    );
   } else {
     console.error(`Unknown command: ${command}`);
     console.error(`Run "primer --help" for usage.`);

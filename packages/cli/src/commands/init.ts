@@ -2,6 +2,7 @@ import * as p from "@clack/prompts";
 import { join } from "node:path";
 import { existsSync } from "node:fs";
 import { loadConfig } from "../lib/config.ts";
+import { writeProjectConfig, getPrimerVersion } from "../lib/project.ts";
 import { getTemplatesRoot } from "../lib/resolve.ts";
 import { installSkills, writeSkillsToTools, AVAILABLE_SKILLS } from "../lib/skills.ts";
 import {
@@ -10,8 +11,6 @@ import {
   resolvePackageManagerRun,
   resolveSteps,
 } from "../lib/scaffold.ts";
-import type { ScaffoldContext, AiTool, PackageManager, SkillEntry } from "../lib/scaffold.ts";
-import type { SkillName } from "../lib/skills.ts";
 import {
   PROVIDERS,
   resolveApiKey,
@@ -19,7 +18,10 @@ import {
   parseGenerationResult,
   writeAgentFiles,
 } from "../lib/ai/index.ts";
+
 import type { ProviderKey, TechStack } from "../lib/ai/index.ts";
+import type { SkillName } from "../lib/skills.ts";
+import type { ScaffoldContext, AiTool, PackageManager, SkillEntry } from "../lib/scaffold.ts";
 
 const OFFLINE_FLAG = process.argv.includes("--offline");
 
@@ -331,6 +333,16 @@ export async function runInit(): Promise<void> {
       gs.stop("Git init skipped (git not found)");
     }
   }
+
+  writeProjectConfig(outputDir, {
+    projectName: context.projectName,
+    packageManager: context.packageManager,
+    aiProvider: aiProvider ?? null,
+    aiTools: context.aiTools,
+    skills: installedSkills,
+    createdAt: new Date().toISOString(),
+    primerVersion: getPrimerVersion(),
+  });
 
   p.outro(
     OFFLINE_FLAG
