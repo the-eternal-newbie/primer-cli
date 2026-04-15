@@ -184,6 +184,8 @@ export async function runInit(): Promise<void> {
     initGit: base.initGit as boolean,
     hasSkills: false,
     installedSkillsList: [],
+    nextStep: 3, // updated after skills resolved
+    finalStep: 4,
   };
 
   const outputDir = join(process.cwd(), context.projectName);
@@ -210,9 +212,11 @@ export async function runInit(): Promise<void> {
       context.installedSkillsList = installedSkills.map(
         (slug): SkillEntry => ({
           slug,
-          name: AVAILABLE_SKILLS.find((s) => s.value === slug)?.label ?? slug,
+          name: AVAILABLE_SKILLS.find(s => s.value === slug)?.label ?? slug,
         })
       );
+      context.nextStep = 4;  // skills adds one step
+      context.finalStep = 5;
       ss.stop(
         `Installed ${skills.length} skill package${skills.length > 1 ? "s" : ""}`
       );

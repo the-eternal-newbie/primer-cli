@@ -1,0 +1,116 @@
+# Getting Started with {{projectName}}
+
+This project was scaffolded with [primer](https://github.com/the-eternal-newbie/primer-cli)
+and is pre-configured for AI-assisted development.
+
+## What was created
+
+```
+{{projectName}}/
+├── AGENTS.md                  ← start here — mandatory agent entry point
+├── docs/
+│   ├── CANONICAL_ARCHITECTURE.md  ← fill in your stack decisions
+│   ├── CANONICAL_PATTERNS.md      ← fill in your coding patterns
+{{#hasSkills}}
+│   └── skills/                    ← domain knowledge for your agents
+{{#installedSkillsList}}
+│       · {{slug}}/                ← {{name}} skill
+{{/installedSkillsList}}
+{{/hasSkills}}
+{{#cursorEnabled}}
+├── .cursor/
+│   ├── rules/                 ← auto-loaded by Cursor on every session
+│   └── commands/              ← slash commands for git discipline and skills
+{{/cursorEnabled}}
+{{#claudeEnabled}}
+├── .claude/
+│   ├── CLAUDE.md              ← auto-loaded by Claude Code on every session
+│   └── commands/              ← slash commands for git discipline and skills
+{{/claudeEnabled}}
+└── src/                       ← your source code goes here
+```
+
+## Step 1 — Fill in the canonical docs
+
+Before writing any code, update these two files with your actual decisions:
+
+**`docs/CANONICAL_ARCHITECTURE.md`**
+Document your stack choices and rationale. Your agents will read this
+before generating any code. Vague architecture docs produce vague code.
+
+**`docs/CANONICAL_PATTERNS.md`**
+Document the exact coding patterns your project follows. Include examples.
+Agents copy patterns — give them good ones to copy.
+
+## Step 2 — Understand your agent conventions
+
+**`AGENTS.md`** is the mandatory entry point for every AI agent working
+on this project. It tells agents what to read, what commands to use,
+and what rules to follow. Read it now so you understand what your
+agents will see.
+
+{{#hasSkills}}
+## Step 3 — Use your skill packages
+
+Your project includes these domain skill packages:
+
+| Skill | Knowledge | Commands |
+|---|---|---|
+{{#installedSkillsList}}
+| {{name}} | `docs/skills/{{slug}}/knowledge/` | `docs/skills/{{slug}}/commands/` |
+{{/installedSkillsList}}
+
+When working in a domain, tell your agent to read the relevant knowledge
+docs before starting. The commands in each skill package are step-by-step
+procedures your agent should follow instead of inventing its own approach.
+
+{{/hasSkills}}
+## Step {{nextStep}} — Start your first branch
+
+Use the git discipline commands to start work:
+
+{{#cursorEnabled}}
+In Cursor, type `/git-start-work feat <scope> <description>` to create
+a properly named branch before writing any code.
+{{/cursorEnabled}}
+{{#claudeEnabled}}
+In Claude Code, run `/git-start-work feat <scope> <description>` to create
+a properly named branch before writing any code.
+{{/claudeEnabled}}
+
+The git commands enforce:
+- Branches from up-to-date master/main
+- Conventional commit format
+- Pre-commit checks (typecheck, lint, test) before every commit
+- PR-based workflow — never commit directly to the default branch
+
+## Step {{finalStep}} — Install dependencies and verify the setup
+
+```bash
+{{packageManager}} install
+{{packageManagerRun}} build
+{{packageManagerRun}} typecheck
+```
+
+All three should pass on a fresh scaffold. If they don't, something
+is misconfigured — fix it before writing any feature code.
+
+## Day-to-day workflow
+
+```
+1. /git-start-work     — always start with a branch
+2. Write code          — agents read AGENTS.md and canonical docs
+3. /git-commit-progress — commit with checks as you go
+4. /git-finish-work    — push and open PR when done
+5. Review and merge    — human reviews, squash-merges, deletes branch
+```
+
+## Useful references
+
+- `AGENTS.md` — agent entry point and non-negotiables
+- `docs/CANONICAL_ARCHITECTURE.md` — stack decisions
+- `docs/CANONICAL_PATTERNS.md` — coding patterns
+{{#hasSkills}}
+- `docs/skills/` — domain knowledge packages
+{{/hasSkills}}
+- `primer --help` — CLI reference

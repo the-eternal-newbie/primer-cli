@@ -42,6 +42,8 @@ describe("scaffold integration", () => {
       initGit: false,
       hasSkills: false,
       installedSkillsList: [],
+      nextStep: 3,
+      finalStep: 4,
     };
 
     await scaffoldDir(templatesRoot, outDir, context);
@@ -70,6 +72,8 @@ describe("scaffold integration", () => {
       initGit: false,
       hasSkills: false,
       installedSkillsList: [],
+      nextStep: 3,
+      finalStep: 4,
     };
 
     await scaffoldDir(templatesRoot, outDir, context);
@@ -100,6 +104,8 @@ describe("scaffold integration", () => {
       initGit: false,
       hasSkills: false,
       installedSkillsList: [],
+      nextStep: 3,
+      finalStep: 4,
     };
 
     await scaffoldDir(templatesRoot, outDir, context);
@@ -121,6 +127,8 @@ describe("scaffold integration", () => {
       initGit: false,
       hasSkills: false,
       installedSkillsList: [],
+      nextStep: 3,
+      finalStep: 4,
     };
 
     await scaffoldDir(templatesRoot, outDir, context);

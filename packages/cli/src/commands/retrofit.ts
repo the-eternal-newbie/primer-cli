@@ -205,6 +205,8 @@ export async function runRetrofit(): Promise<void> {
                 name: AVAILABLE_SKILLS.find(s => s.value === slug)?.label ?? slug,
             })
         ),
+        nextStep: 3,
+        finalStep: 4,
     };
 
     const templatesRoot = getTemplatesRoot("cli-tool");

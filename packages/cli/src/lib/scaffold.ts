@@ -20,6 +20,8 @@ export interface ScaffoldContext {
   initGit: boolean;
   hasSkills: boolean;
   installedSkillsList: SkillEntry[];
+  nextStep: number;
+  finalStep: number;
 }
 
 export type AiTool = ScaffoldContext["aiTools"][number];
