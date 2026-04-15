@@ -1,18 +1,18 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
-// Suppress Node.js experimental fetch warning — fetch is stable enough for our use
+// Suppress Node.js experimental fetch warning
 process.removeAllListeners("warning");
 process.on("warning", (warning) => {
   if (warning.name === "ExperimentalWarning" && warning.message.includes("Fetch")) return;
   console.warn(warning.name, warning.message);
 });
 
-
 import { parseArgs } from "node:util";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { runInit } from "./commands/init.ts";
+import { runRetrofit } from "./commands/retrofit.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -32,11 +32,14 @@ USAGE
 
 COMMANDS
   init        Scaffold a new project with agent conventions
+  retrofit    Add agent conventions to an existing project
 
 FLAGS
   --help      Show this help message
   --version   Show the current version
-  --offline   Skip AI agent generation (no API key required)
+  --offline   Skip AI agent generation (init only)
+  --dry-run   Preview changes without writing files (retrofit only)
+  --force     Overwrite existing files (retrofit only)
 
 CONFIGURATION
   Create primer.config.json or primer.config.mjs in your working directory:
@@ -71,6 +74,9 @@ ENVIRONMENT VARIABLES
 EXAMPLES
   primer init
   primer init --offline
+  primer retrofit
+  primer retrofit --dry-run
+  primer retrofit --force
   primer --version
 `);
 }
@@ -81,6 +87,8 @@ const { values, positionals } = parseArgs({
     help: { type: "boolean", short: "h" },
     version: { type: "boolean", short: "v" },
     offline: { type: "boolean" },
+    "dry-run": { type: "boolean" },
+    force: { type: "boolean" },
   },
   allowPositionals: true,
   strict: false,
@@ -100,6 +108,11 @@ const command = positionals[0];
 
 if (!command || command === "init") {
   runInit().catch((err: unknown) => {
+    console.error("Error:", err instanceof Error ? err.message : String(err));
+    process.exit(1);
+  });
+} else if (command === "retrofit") {
+  runRetrofit().catch((err: unknown) => {
     console.error("Error:", err instanceof Error ? err.message : String(err));
     process.exit(1);
   });
