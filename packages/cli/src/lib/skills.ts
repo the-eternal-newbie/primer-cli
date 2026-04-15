@@ -108,6 +108,7 @@ export async function writeSkillsToTools(
   claudeEnabled: boolean,
 ): Promise<void> {
   if (skills.length === 0) return;
+  if (!cursorEnabled && !claudeEnabled) return;
 
   const skillsRoot = getSkillsRoot();
 
