@@ -20,6 +20,8 @@ export interface ScaffoldContext {
   initGit: boolean;
   hasSkills: boolean;
   installedSkillsList: SkillEntry[];
+  nextStep: number;
+  finalStep: number;
 }
 
 export type AiTool = ScaffoldContext["aiTools"][number];
@@ -38,6 +40,12 @@ export const DOTFILE_RENAMES: Record<string, string> = {
   gitignore: ".gitignore",
   npmrc: ".npmrc",
 } as const;
+
+export function resolveSteps(hasSkills: boolean): { nextStep: number; finalStep: number } {
+  return hasSkills
+    ? { nextStep: 4, finalStep: 5 }
+    : { nextStep: 3, finalStep: 4 };
+}
 
 export function resolvePackageManagerVersion(
   pm: string,

@@ -8,6 +8,7 @@ import {
   scaffoldDir,
   resolvePackageManagerVersion,
   resolvePackageManagerRun,
+  resolveSteps,
 } from "../lib/scaffold.ts";
 import type { ScaffoldContext, AiTool, PackageManager, SkillEntry } from "../lib/scaffold.ts";
 import type { SkillName } from "../lib/skills.ts";
@@ -184,6 +185,7 @@ export async function runInit(): Promise<void> {
     initGit: base.initGit as boolean,
     hasSkills: false,
     installedSkillsList: [],
+    ...resolveSteps(skills.length > 0),
   };
 
   const outputDir = join(process.cwd(), context.projectName);
@@ -210,9 +212,10 @@ export async function runInit(): Promise<void> {
       context.installedSkillsList = installedSkills.map(
         (slug): SkillEntry => ({
           slug,
-          name: AVAILABLE_SKILLS.find((s) => s.value === slug)?.label ?? slug,
+          name: AVAILABLE_SKILLS.find(s => s.value === slug)?.label ?? slug,
         })
       );
+      Object.assign(context, resolveSteps(true));
       ss.stop(
         `Installed ${skills.length} skill package${skills.length > 1 ? "s" : ""}`
       );

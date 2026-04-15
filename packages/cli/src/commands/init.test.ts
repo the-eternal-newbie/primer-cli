@@ -42,6 +42,8 @@ describe("scaffold integration", () => {
       initGit: false,
       hasSkills: false,
       installedSkillsList: [],
+      nextStep: 3,
+      finalStep: 4,
     };
 
     await scaffoldDir(templatesRoot, outDir, context);
@@ -70,6 +72,8 @@ describe("scaffold integration", () => {
       initGit: false,
       hasSkills: false,
       installedSkillsList: [],
+      nextStep: 3,
+      finalStep: 4,
     };
 
     await scaffoldDir(templatesRoot, outDir, context);
@@ -100,6 +104,8 @@ describe("scaffold integration", () => {
       initGit: false,
       hasSkills: false,
       installedSkillsList: [],
+      nextStep: 3,
+      finalStep: 4,
     };
 
     await scaffoldDir(templatesRoot, outDir, context);
@@ -121,6 +127,8 @@ describe("scaffold integration", () => {
       initGit: false,
       hasSkills: false,
       installedSkillsList: [],
+      nextStep: 3,
+      finalStep: 4,
     };
 
     await scaffoldDir(templatesRoot, outDir, context);
@@ -131,5 +139,71 @@ describe("scaffold integration", () => {
 
     const packageJson = await readFile(join(outDir, "package.json"), "utf-8");
     assert.ok(packageJson.includes('"name": "my-special-project"'));
+  });
+
+  it("generates GETTING_STARTED.md during scaffold", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "primer-gs-test-"));
+    try {
+      const context: ScaffoldContext = {
+        projectName: "test-gs",
+        packageManager: "pnpm",
+        packageManagerVersion: "10.0.0",
+        packageManagerRun: "pnpm",
+        aiTools: ["cursor"],
+        cursorEnabled: true,
+        claudeEnabled: false,
+        initGit: false,
+        hasSkills: false,
+        installedSkillsList: [],
+        nextStep: 3,
+        finalStep: 4,
+      };
+      const templatesRoot = getTemplatesRoot("cli-tool");
+      await scaffoldDir(templatesRoot, dir, context);
+
+      const gsPath = join(dir, "GETTING_STARTED.md");
+      assert.ok(await exists(gsPath), "GETTING_STARTED.md should exist");
+
+      const content = await readFile(gsPath, "utf-8");
+      assert.ok(content.includes("## Step 3 — Start your first branch"));
+      assert.ok(content.includes("## Step 4 — Install dependencies"));
+      assert.ok(!content.includes("## Step 3 — Use your skill packages"));
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("generates GETTING_STARTED.md with correct step numbers when skills installed", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "primer-gs-skills-test-"));
+    try {
+      const context: ScaffoldContext = {
+        projectName: "test-gs-skills",
+        packageManager: "pnpm",
+        packageManagerVersion: "10.0.0",
+        packageManagerRun: "pnpm",
+        aiTools: ["cursor"],
+        cursorEnabled: true,
+        claudeEnabled: false,
+        initGit: false,
+        hasSkills: true,
+        installedSkillsList: [
+          { slug: "database", name: "Database" },
+          { slug: "auth", name: "Auth" },
+        ],
+        nextStep: 4,
+        finalStep: 5,
+      };
+      const templatesRoot = getTemplatesRoot("cli-tool");
+      await scaffoldDir(templatesRoot, dir, context);
+
+      const content = await readFile(join(dir, "GETTING_STARTED.md"), "utf-8");
+      assert.ok(content.includes("## Step 3 — Use your skill packages"));
+      assert.ok(content.includes("## Step 4 — Start your first branch"));
+      assert.ok(content.includes("## Step 5 — Install dependencies"));
+      assert.ok(content.includes("| Database |"));
+      assert.ok(content.includes("| Auth |"));
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   });
 });

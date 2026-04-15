@@ -6,6 +6,7 @@ const { renderTemplate, copyStaticFile } = await import("../lib/scaffold.ts");
 import { installSkills, writeSkillsToTools, AVAILABLE_SKILLS } from "../lib/skills.ts";
 import {
     resolvePackageManagerRun,
+    resolveSteps,
     writeOutputFile,
 } from "../lib/scaffold.ts";
 import type { ScaffoldContext, PackageManager, AiTool, SkillEntry } from "../lib/scaffold.ts";
@@ -205,6 +206,7 @@ export async function runRetrofit(): Promise<void> {
                 name: AVAILABLE_SKILLS.find(s => s.value === slug)?.label ?? slug,
             })
         ),
+        ...resolveSteps(allInstalledSkills.length > 0),
     };
 
     const templatesRoot = getTemplatesRoot("cli-tool");
