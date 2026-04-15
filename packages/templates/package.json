@@ -2,6 +2,20 @@
     "name": "@monomit/primer-templates",
     "version": "1.1.0",
     "private": false,
+    "description": "scaffold AI-ready projects with pre-configured agent conventions",
+    "keywords": [
+        "ai",
+        "scaffold",
+        "templates",
+        "cursor-rules",
+        "agents",
+        "skills",
+        "devtools",
+        "typescript",
+        "agentic",
+        "llm",
+        "primer"
+    ],
     "type": "module",
     "files": [
         "index.js",

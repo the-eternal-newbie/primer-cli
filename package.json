@@ -1,6 +1,17 @@
 {
   "name": "@monomit/primer-workspace",
   "private": true,
+  "keywords": [
+    "ai",
+    "cli",
+    "scaffold",
+    "cursor",
+    "claude",
+    "devtools",
+    "typescript",
+    "agentic"
+  ],
+  "description": "scaffold AI-ready projects with pre-configured agent conventions",
   "packageManager": "pnpm@10.33.0",
   "engines": {
     "node": ">=22",
