@@ -91,6 +91,16 @@ export async function installSkills(
   }
 }
 
+async function accessDir(path: string): Promise<boolean> {
+  try {
+    await access(path);
+    return true;
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException).code === "ENOENT") return false;
+    throw err; // rethrow permission errors and other unexpected failures
+  }
+}
+
 export async function writeSkillsToTools(
   outputDir: string,
   skills: SkillName[],
@@ -106,66 +116,51 @@ export async function writeSkillsToTools(
     if (!skillMeta) continue;
 
     const src = join(skillsRoot, skill);
+    const rulesDir = join(src, "rules");
+    const commandsDir = join(src, "commands");
 
-    // Copy rules into .cursor/rules/ with clean naming and scoped globs
-    if (cursorEnabled) {
-      const rulesDir = join(src, "rules");
-      try {
-        await access(rulesDir);
-        const ruleFiles = await readdir(rulesDir);
-        for (const file of ruleFiles) {
-          // Read original content
-          let content = await readFile(join(rulesDir, file), "utf-8");
+    // Read command files once — write to both tools
+    let commandFiles: string[] = [];
+    const commandContents = new Map<string, string>();
 
-          // Replace the generic glob with skill-specific globs
-          const globs = SKILL_GLOBS[skill] ?? "**/*";
-          content = content.replace(
-            /globs:\s*\[.*?\]/,
-            `globs: ${globs}`
-          );
-
-          // Use clean name: database.mdc not database-database.mdc
-          await writeOutputFile(
-            join(outputDir, ".cursor", "rules", file),
-            content
-          );
-        }
-      } catch {
-        // no rules dir — skip
-      }
-
-      // Copy commands into .cursor/commands/agents/<skill>/
-      const commandsDir = join(src, "commands");
-      try {
-        await access(commandsDir);
-        const commandFiles = await readdir(commandsDir);
-        for (const file of commandFiles) {
-          const content = await readFile(join(commandsDir, file), "utf-8");
-          await writeOutputFile(
-            join(outputDir, ".cursor", "commands", "agents", skill, file),
-            content
-          );
-        }
-      } catch {
-        // no commands dir — skip
+    if (await accessDir(commandsDir)) {
+      commandFiles = await readdir(commandsDir);
+      for (const file of commandFiles) {
+        commandContents.set(file, await readFile(join(commandsDir, file), "utf-8"));
       }
     }
 
-    // Copy commands into .claude/commands/agents/<skill>/
+    // Write rules into .cursor/rules/
+    if (cursorEnabled && await accessDir(rulesDir)) {
+      const ruleFiles = await readdir(rulesDir);
+      for (const file of ruleFiles) {
+        let content = await readFile(join(rulesDir, file), "utf-8");
+        const globs = SKILL_GLOBS[skill] ?? "**/*";
+        content = content.replace(/globs:\s*\[.*?\]/, `globs: ${globs}`);
+        await writeOutputFile(
+          join(outputDir, ".cursor", "rules", file),
+          content
+        );
+      }
+    }
+
+    // Write commands to .cursor/commands/agents/<skill>/
+    if (cursorEnabled) {
+      for (const [file, content] of commandContents) {
+        await writeOutputFile(
+          join(outputDir, ".cursor", "commands", "agents", skill, file),
+          content
+        );
+      }
+    }
+
+    // Write commands to .claude/commands/agents/<skill>/
     if (claudeEnabled) {
-      const commandsDir = join(src, "commands");
-      try {
-        await access(commandsDir);
-        const commandFiles = await readdir(commandsDir);
-        for (const file of commandFiles) {
-          const content = await readFile(join(commandsDir, file), "utf-8");
-          await writeOutputFile(
-            join(outputDir, ".claude", "commands", "agents", skill, file),
-            content
-          );
-        }
-      } catch {
-        // no commands dir — skip
+      for (const [file, content] of commandContents) {
+        await writeOutputFile(
+          join(outputDir, ".claude", "commands", "agents", skill, file),
+          content
+        );
       }
     }
   }

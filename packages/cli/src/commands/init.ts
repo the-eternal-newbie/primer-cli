@@ -220,9 +220,8 @@ export async function runInit(): Promise<void> {
       ss.stop("Skill installation failed");
       p.log.error(String(err));
       p.log.warn(
-        "The project was scaffolded but skill files are missing. " +
-          "Agent docs will not reference skill paths. " +
-          "Run primer again or add skill files manually."
+        "Skills failed to install — skill references will be omitted from " +
+        "AGENTS.md and CLAUDE.md. Run primer again or add skill files manually."
       );
     }
   }
